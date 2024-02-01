@@ -26,6 +26,8 @@ set(CMAKE_BUILD_TYPE Debug)
 
 set(CMAKE_CXX_STANDARD 14)
 
+find_package(Eigen3 REQUIRED)
+
 # Include Eigen
 include_directories(/usr/include/eigen3)
 
