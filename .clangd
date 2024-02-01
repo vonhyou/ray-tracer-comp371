@@ -1,0 +1,2 @@
+CompileFlags:
+  Add: [-isystem, /usr/include/eigen3, -isystem, /usr/local/include/eigen3]
