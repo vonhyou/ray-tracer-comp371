@@ -7,6 +7,9 @@ class RayTracer {
 public:
   RayTracer(nlohmann::json);
   void run();
+
+private:
+  nlohmann::json scene;
 };
 
 #endif // !RAY_TRACER_H_
