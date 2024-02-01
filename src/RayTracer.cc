@@ -2,7 +2,6 @@
 #include "../external/simpleppm.h"
 #include "Scene.h"
 
-#include <iostream>
 #include <vector>
 
 RayTracer::RayTracer(nlohmann::json json)
@@ -16,9 +15,4 @@ void RayTracer::render() {
   save_ppm(scene.getName(), buffer, width, height);
 }
 
-void RayTracer::run() {
-  std::cout << scene.getName() << std::endl
-            << scene.getWidth() << " " << scene.getHeight() << std::endl;
-
-  render();
-}
+void RayTracer::run() { render(); }
