@@ -9,7 +9,7 @@ project(raytracer)
 # in the src folder; Without this file the code base will not compile therefore in your 
 # code this define is disabled
 # Also do not forget to create the src folder under code
-#add_compile_options(-DSTUDENT_SOLUTION)
+add_compile_options(-DSTUDENT_SOLUTION)
 
 
 # 2
@@ -21,7 +21,7 @@ project(raytracer)
 
 # When testing large scenes the debug mode will be very slow
 # so switch to release
-#set(CMAKE_BUILD_TYPE Debug)
+set(CMAKE_BUILD_TYPE Debug)
 #set(CMAKE_BUILD_TYPE Release)
 
 set(CMAKE_CXX_STANDARD 14)
