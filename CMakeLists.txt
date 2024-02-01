@@ -26,17 +26,10 @@ set(CMAKE_BUILD_TYPE Debug)
 
 set(CMAKE_CXX_STANDARD 14)
 
-set(CMAKE_PREFIX_PATH
-    /encs # For ENCS lab computers
-    /opt/local # Macports
-)
-
+# Include Eigen
 include_directories(/usr/include/eigen3)
-# If you need too manually add the paths to your Eigen library, you can add it here
-# do not delete the other 
 
 # These folders include some important header files including the header files for your own solution
-#do not remove
 include_directories(src/)
 include_directories(external/)
 
