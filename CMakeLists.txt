@@ -29,6 +29,7 @@ set(CMAKE_CXX_STANDARD 14)
 # Configure Eigen
 set(ENV{EIGEN3_ROOT} /usr/include/eigen3/Eigen)
 find_package(Eigen3 REQUIRED)
+include_directories(${EIGEN3_INCLUDE_DIR})
 include_directories(/usr/include/eigen3)
 
 # These folders include some important header files including the header files for your own solution
