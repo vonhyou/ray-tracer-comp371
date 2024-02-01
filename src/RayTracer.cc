@@ -1,33 +1,24 @@
 #include "RayTracer.h"
 #include "../external/simpleppm.h"
+#include "Scene.h"
 
 #include <iostream>
-#include <string>
 #include <vector>
 
-RayTracer::RayTracer(nlohmann::json scene) : scene(scene) {}
+RayTracer::RayTracer(nlohmann::json json)
+    : json(json), scene(Scene(json["output"])) {}
+
+void RayTracer::render() {
+  int width = scene.getWidth();
+  int height = scene.getHeight();
+
+  std::vector<double> buffer(3 * width * height);
+  save_ppm(scene.getName(), buffer, width, height);
+}
 
 void RayTracer::run() {
-  std::string filename;
-  int sizeX = -1, sizeY = -1;
-  for (auto itr = scene["output"].begin(); itr != scene["output"].end();
-       ++itr) {
+  std::cout << scene.getName() << std::endl
+            << scene.getWidth() << " " << scene.getHeight() << std::endl;
 
-    if (itr->contains("filename")) {
-      filename = (*itr)["filename"].get<std::string>();
-
-      std::cout << filename << std::endl;
-    }
-
-    if (itr->contains("size")) {
-      sizeX = (*itr)["size"].begin()->get<int>();
-      sizeY = ((*itr)["size"].begin() + 1)->get<int>();
-
-      std::cout << sizeX << " " << sizeY << std::endl;
-    }
-  }
-
-  std::vector<double> buffer(3 * sizeX * sizeY);
-
-  save_ppm(filename, buffer, sizeX, sizeY);
+  render();
 }
