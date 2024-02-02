@@ -4,7 +4,7 @@
 
 #include <vector>
 
-RayTracer::RayTracer(nlohmann::json json)
+RayTracer::RayTracer(const nlohmann::json &json)
     : json(json), scene(Scene(json["output"])) {}
 
 void RayTracer::render() {
