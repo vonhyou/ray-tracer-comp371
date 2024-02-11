@@ -13,7 +13,6 @@ public:
   enum class Type { Point, Area };
 
   virtual ~Light() = default;
-
   // a pure virtual function for derived class implementation
   virtual void illumination() const = 0;
 
@@ -27,6 +26,12 @@ protected:
   Matrix4f transform = Matrix4f::Identity(); // optional member `transform`
   unsigned int gridSize = 0;                 // optional member `n`
   bool useCenter = false;                    // optional member `usecenter`
+
+public:
+  // setters for optional members
+  void setTransform(const Matrix4f &);
+  void setGridSize(unsigned int);
+  void setUseCenter(bool);
 };
 
 class PointLight : public Light {
