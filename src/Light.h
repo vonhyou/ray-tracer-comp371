@@ -21,8 +21,8 @@ protected:
       : type(type), diffuse(id), specular(is) {}
 
   Type type;
-  Vector3f diffuse;                          // mandatory member `id`
-  Vector3f specular;                         // mandatory member `is`
+  Vector3f diffuse;
+  Vector3f specular;
   Matrix4f transform = Matrix4f::Identity(); // optional member `transform`
   unsigned int gridSize = 0;                 // optional member `n`
   bool useCenter = false;                    // optional member `usecenter`
