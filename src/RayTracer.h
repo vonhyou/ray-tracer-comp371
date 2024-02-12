@@ -7,12 +7,12 @@
 class RayTracer {
 public:
   RayTracer(const nlohmann::json &);
-  void render();
   void run();
 
 private:
   Scene scene;
   nlohmann::json json;
+  void render();
 };
 
 #endif // !RAY_TRACER_H_
