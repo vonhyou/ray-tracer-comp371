@@ -13,7 +13,6 @@ public:
   enum class Type { Point, Area };
 
   virtual ~Light() = default;
-  // a pure virtual function for derived class implementation
   virtual void illumination() const = 0;
 
 protected:
