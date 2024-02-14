@@ -1,6 +1,9 @@
 #include "RayTracer.h"
 #include "../external/simpleppm.h"
+#include "Parser.h"
+#include "Scene.h"
 
-RayTracer::RayTracer(const nlohmann::json &json) : json(json) {}
-
-void RayTracer::run() {}
+void RayTracer::run() {
+  nlohmann::json sceneJson = this->json["output"][0];
+  Scene *sc = Parser::getScene(sceneJson);
+}

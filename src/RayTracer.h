@@ -5,7 +5,7 @@
 
 class RayTracer {
 public:
-  RayTracer(const nlohmann::json &);
+  RayTracer(const nlohmann::json &j) : json(j) {}
   void run();
 
 private:
