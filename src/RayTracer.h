@@ -2,6 +2,9 @@
 #define RAY_TRACER_H_
 
 #include "../external/json.hpp"
+#include "Scene.h"
+
+#include <vector>
 
 class RayTracer {
 public:
@@ -10,6 +13,11 @@ public:
 
 private:
   nlohmann::json json;
+  std::vector<Scene *> scenes;
+
+  void parse();
+  void render();
+  void output();
 };
 
 #endif // !RAY_TRACER_H_
