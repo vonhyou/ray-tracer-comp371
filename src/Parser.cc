@@ -30,7 +30,7 @@ Scene *Parser::getScene(const nlohmann::json &j) {
   float fov = j["fov"].get<float>();
   Vector3f lookAt = getVector3f(j["lookat"]);
   Vector3f up = getVector3f(j["up"]);
-  Vector3f center = getVector3f(j["center"]);
+  Vector3f center = getVector3f(j["centre"]);
   Vector3f ai = getVector3f(j["ai"]);
   Vector3f bgc = getVector3f(j["bkc"]);
 
