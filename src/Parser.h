@@ -9,15 +9,15 @@
 
 class Parser {
 public:
-  static Geometry *parseGeometry(const nlohmann::json &);
-  static Light *parseLight(const nlohmann::json &);
-  static Scene *parseScene(const nlohmann::json &);
+  static Geometry *getGeometry(const nlohmann::json &);
+  static Light *getLight(const nlohmann::json &);
+  static Scene *getScene(const nlohmann::json &);
 
 private:
-  static PointLight *parsePointLight(const nlohmann::json &);
-  static AreaLight *parseAreaLight(const nlohmann::json &);
-  static Rectangle *parseRectangle(const nlohmann::json &);
-  static Sphere *parseSphere(const nlohmann::json &);
+  static PointLight *getPointLight(const nlohmann::json &);
+  static AreaLight *getAreaLight(const nlohmann::json &);
+  static Rectangle *getRectangle(const nlohmann::json &);
+  static Sphere *getSphere(const nlohmann::json &);
 };
 
 #endif // !PARSER_H_
