@@ -37,6 +37,8 @@ public:
       : Geometry(Type::SPHERE, ka, kd, ks, ca, cd, cs, pc), radius(radius),
         center(center) {}
 
+  bool intersect() const override;
+
 private:
   float radius;
   Vector3f center;
@@ -48,6 +50,8 @@ public:
             const Vector3f &cs, float pc, const Matrix<float, 3, 4> &corners)
       : Geometry(Type::RECTANGLE, ka, kd, ks, ca, cd, cs, pc),
         corners(corners) {}
+
+  bool intersect() const override;
 
 private:
   Matrix<float, 3, 4> corners;
