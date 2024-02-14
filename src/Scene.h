@@ -32,6 +32,9 @@ private:
   bool globalIllum = false;
 
 public:
+  string getName();
+  int getWidth();
+  int getHeight();
   void setRaysPerPixel(const Eigen::VectorXi &);
   void setAntialiasing(bool);
   void setTwoSideRender(bool);
