@@ -16,8 +16,12 @@ public:
 private:
   static PointLight *getPointLight(const nlohmann::json &);
   static AreaLight *getAreaLight(const nlohmann::json &);
-  static Rectangle *getRectangle(const nlohmann::json &);
-  static Sphere *getSphere(const nlohmann::json &);
+  static Rectangle *getRectangle(const nlohmann::json &, float, float, float,
+                                 const Vector3f &, const Vector3f &,
+                                 const Vector3f &, float);
+  static Sphere *getSphere(const nlohmann::json &, float, float, float,
+                           const Vector3f &, const Vector3f &, const Vector3f &,
+                           float);
 };
 
 #endif // !PARSER_H_
