@@ -18,7 +18,7 @@ void RayTracer::output() {
     int width = scene->getWidth();
     int height = scene->getHeight();
     vector<double> buffer(3 * width * height);
-    save_ppm("build/" + scene->getName(), buffer, width, height);
+    save_ppm(scene->getName(), buffer, width, height);
   }
 }
 
