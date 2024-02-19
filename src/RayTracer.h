@@ -6,7 +6,11 @@
 #include "Light.h"
 #include "Scene.h"
 
+#include <utility>
 #include <vector>
+
+using Buffer = std::vector<Eigen::Vector3f>;
+using Task = std::pair<Scene *, Buffer>;
 
 class RayTracer {
 public:
@@ -19,9 +23,11 @@ private:
   std::vector<Light *> lights;
   std::vector<Geometry *> geometries;
 
+  std::vector<Task *> tasks;
+
   void parse();
-  void render();
-  void output();
+  void render(Scene *);
+  void output(Task *);
 };
 
 #endif // !RAY_TRACER_H_

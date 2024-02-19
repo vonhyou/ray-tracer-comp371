@@ -2,9 +2,9 @@
 #include "../external/simpleppm.h"
 #include "Parser.h"
 
+#include <Eigen/Core>
+#include <iostream>
 #include <vector>
-
-using std::vector;
 
 void RayTracer::parse() {
   for (auto i = json["output"].begin(); i != json["output"].end(); ++i)
@@ -17,19 +17,41 @@ void RayTracer::parse() {
     lights.push_back(Parser::getLight(*i));
 }
 
-void RayTracer::render() {}
+void RayTracer::render(Scene *scene) {
+  int width = scene->getWidth();
+  int height = scene->getHeight();
+  Buffer buffer(width * height);
+  Task *task = new Task(scene, buffer);
+  tasks.push_back(task);
+}
 
-void RayTracer::output() {
-  for (auto scene : scenes) {
-    int width = scene->getWidth();
-    int height = scene->getHeight();
-    vector<double> buffer(3 * width * height);
-    save_ppm(scene->getName(), buffer, width, height);
-  }
+void RayTracer::output(Task *task) {
+  string path = task->first->getName();
+  int width = task->first->getWidth();
+  int height = task->first->getHeight();
+
+  std::ofstream fout(path, std::ios_base::out | std::ios_base::binary);
+  fout << "P6" << std::endl
+       << width << ' ' << height << std::endl
+       << "255" << std::endl;
+
+  Buffer buffer = task->second;
+  for (int i = 0; i < height; ++i)
+    for (int j = 0; j < width; ++j)
+      fout << 255.0 * buffer[i * width + j].transpose() << ' ';
+
+  fout.close();
 }
 
 void RayTracer::run() {
   parse();
-  render();
-  output();
+
+  for (auto scene : scenes)
+    render(scene);
+
+  for (auto task : tasks)
+    output(task);
+
+  Vector3f test(1, 2, 3);
+  std::cout << test.transpose() << std::endl;
 }
