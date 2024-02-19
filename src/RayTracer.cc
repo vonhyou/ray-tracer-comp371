@@ -9,6 +9,9 @@ using std::vector;
 void RayTracer::parse() {
   for (auto i = json["output"].begin(); i != json["output"].end(); ++i)
     scenes.push_back(Parser::getScene(*i));
+
+  for (auto i = json["geometry"].begin(); i != json["geometry"].end(); ++i)
+    geometries.push_back(Parser::getGeometry(*i));
 }
 
 void RayTracer::render() {}

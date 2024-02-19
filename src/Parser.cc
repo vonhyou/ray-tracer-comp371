@@ -71,9 +71,13 @@ Geometry *Parser::getGeometry(const nlohmann::json &j) {
   return g;
 }
 
-// TODO: return four corners for rectangles and area lights
+// helper function to get four corners of a rectangle
 const Matrix<float, 3, 4> getCorners(const nlohmann::json &j) {
-  return Matrix<float, 3, 4>();
+  Matrix<float, 3, 4> corners;
+  for (int i = 0; i < 4; ++i) {
+    corners.col(i) = getVector3f(j["p" + std::to_string(i + 1)]);
+  }
+  return corners;
 }
 
 Sphere *Parser::getSphere(const nlohmann::json &j, float ka, float kd, float ks,
