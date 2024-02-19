@@ -3,6 +3,7 @@
 #include "Parser.h"
 #include "Ray.h"
 #include <Eigen/src/Core/Matrix.h>
+#include <cmath>
 
 void RayTracer::parse() {
   for (auto i = json["output"].begin(); i != json["output"].end(); ++i)
@@ -18,7 +19,10 @@ void RayTracer::parse() {
 Ray getRay(int x, int y, const Vector3f &camPos, const Vector3f &lookat,
            float fov, int width, int height) {
   // TODO: compute ray
-  float viewportHeight = 2.0f;
+  float focalLength = lookat.norm();
+  float theta = fov / 180 * 3.14159;
+  float h = tan(theta / 2);
+  float viewportHeight = 2 * h * focalLength;
   float viewportWidth = viewportHeight * width / height;
   Vector3f viewportU = Vector3f(viewportWidth, 0, 0);
   Vector3f viewportV = Vector3f(0, -viewportHeight, 0);
