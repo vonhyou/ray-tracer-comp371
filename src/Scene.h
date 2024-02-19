@@ -32,7 +32,7 @@ private:
   bool globalIllum = false;
 
 public:
-  string getName();
+  string getName() const;
   int getWidth();
   int getHeight();
   void setRaysPerPixel(const Eigen::VectorXi &);

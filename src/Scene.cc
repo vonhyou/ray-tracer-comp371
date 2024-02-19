@@ -1,6 +1,6 @@
 #include "Scene.h"
 
-string Scene::getName() { return name; }
+string Scene::getName() const { return name; }
 
 int Scene::getWidth() { return width; }
 
