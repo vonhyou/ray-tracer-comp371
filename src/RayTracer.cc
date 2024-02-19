@@ -20,7 +20,7 @@ void RayTracer::parse() {
 void RayTracer::render(Scene *scene) {
   int width = scene->getWidth();
   int height = scene->getHeight();
-  Buffer buffer(width * height);
+  Buffer buffer(width * height * 3);
   Task *task = new Task(scene, buffer);
   tasks.push_back(task);
 }
@@ -30,17 +30,7 @@ void RayTracer::output(Task *task) {
   int width = task->first->getWidth();
   int height = task->first->getHeight();
 
-  std::ofstream fout(path, std::ios_base::out | std::ios_base::binary);
-  fout << "P6" << std::endl
-       << width << ' ' << height << std::endl
-       << "255" << std::endl;
-
-  Buffer buffer = task->second;
-  for (int i = 0; i < height; ++i)
-    for (int j = 0; j < width; ++j)
-      fout << 255.0 * buffer[i * width + j].transpose() << ' ';
-
-  fout.close();
+  save_ppm(path, task->second, width, height);
 }
 
 void RayTracer::run() {

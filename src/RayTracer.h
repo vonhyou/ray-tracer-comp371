@@ -9,7 +9,7 @@
 #include <utility>
 #include <vector>
 
-using Buffer = std::vector<Eigen::Vector3f>;
+using Buffer = std::vector<double>;
 using Task = std::pair<Scene *, Buffer>;
 
 class RayTracer {
