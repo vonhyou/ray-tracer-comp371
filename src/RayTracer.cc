@@ -2,10 +2,6 @@
 #include "../external/simpleppm.h"
 #include "Parser.h"
 
-#include <Eigen/Core>
-#include <iostream>
-#include <vector>
-
 void RayTracer::parse() {
   for (auto i = json["output"].begin(); i != json["output"].end(); ++i)
     scenes.push_back(Parser::getScene(*i));
@@ -41,7 +37,4 @@ void RayTracer::run() {
 
   for (auto task : tasks)
     output(task);
-
-  Vector3f test(1, 2, 3);
-  std::cout << test.transpose() << std::endl;
 }
