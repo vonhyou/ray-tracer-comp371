@@ -6,9 +6,9 @@ void Geometry::setTransform(const Matrix4f &transform) {
 
 bool Sphere::intersect(const Ray &r) const {
   Vector3f originCenter = r.getOrigin() - center;
-  int a = r.getDirection().dot(r.getDirection());
-  int b = 2 * originCenter.dot(r.getDirection());
-  int c = originCenter.dot(originCenter) - radius * radius;
+  float a = r.getDirection().dot(r.getDirection());
+  float b = 2.0f * originCenter.dot(r.getDirection());
+  float c = originCenter.dot(originCenter) - radius * radius;
 
   return b * b - 4 * a * c >= 0;
 }
