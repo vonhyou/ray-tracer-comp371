@@ -1,5 +1,11 @@
 #include "Scene.h"
 
+string Scene::getName() { return name; }
+
+int Scene::getWidth() { return width; }
+
+int Scene::getHeight() { return height; }
+
 void Scene::setRaysPerPixel(const Eigen::VectorXi &raysPerPixel) {
   this->raysPerPixel = raysPerPixel;
 }
