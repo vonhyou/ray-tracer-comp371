@@ -2,6 +2,7 @@
 #include "../external/simpleppm.h"
 #include "Parser.h"
 #include "Ray.h"
+#include <Eigen/src/Core/Matrix.h>
 
 void RayTracer::parse() {
   for (auto i = json["output"].begin(); i != json["output"].end(); ++i)
@@ -17,7 +18,20 @@ void RayTracer::parse() {
 Ray getRay(int x, int y, const Vector3f &camPos, const Vector3f &lookat,
            float fov, int width, int height) {
   // TODO: compute ray
-  return Ray(Vector3f(), Vector3f());
+  float viewportHeight = 2.0f;
+  float viewportWidth = viewportHeight * width / height;
+  Vector3f viewportU = Vector3f(viewportWidth, 0, 0);
+  Vector3f viewportV = Vector3f(0, -viewportHeight, 0);
+
+  Vector3f deltaU = viewportU / width;
+  Vector3f deltaV = viewportV / height;
+
+  Vector3f viewportUpperLeft = camPos - lookat - viewportU / 2 - viewportV / 2;
+  Vector3f pixelUpperLeftPos = viewportUpperLeft + 0.5 * (deltaU + deltaV);
+
+  Vector3f pixelCenter = pixelUpperLeftPos + (x * deltaU) + (y * deltaV);
+
+  return Ray(camPos, pixelCenter - camPos);
 }
 
 void RayTracer::render(Scene *scene) {
