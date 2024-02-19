@@ -35,6 +35,10 @@ public:
   string getName() const;
   int getWidth();
   int getHeight();
+  float getFov();
+  Vector3f getCenter() const;
+  Vector3f getUpVector() const;
+  Vector3f getLookAt() const;
   void setRaysPerPixel(const Eigen::VectorXi &);
   void setAntialiasing(bool);
   void setTwoSideRender(bool);

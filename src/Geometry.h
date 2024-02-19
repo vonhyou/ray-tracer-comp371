@@ -1,6 +1,8 @@
 #ifndef GEOMETRY_H_
 #define GEOMETRY_H_
 
+#include "Ray.h"
+
 #include <Eigen/Core>
 
 using Eigen::Matrix;
@@ -13,7 +15,7 @@ public:
   enum class Type { SPHERE, RECTANGLE };
 
   virtual ~Geometry() = default;
-  virtual bool intersect() const = 0;
+  virtual bool intersect(const Ray &) const = 0;
 
 protected:
   Geometry(Type type, float ka, float kd, float ks, const Vector3f &ca,
@@ -37,7 +39,7 @@ public:
       : Geometry(Type::SPHERE, ka, kd, ks, ca, cd, cs, pc), radius(radius),
         center(center) {}
 
-  bool intersect() const override;
+  bool intersect(const Ray &) const override;
 
 private:
   float radius;
@@ -51,7 +53,7 @@ public:
       : Geometry(Type::RECTANGLE, ka, kd, ks, ca, cd, cs, pc),
         corners(corners) {}
 
-  bool intersect() const override;
+  bool intersect(const Ray &) const override;
 
 private:
   Matrix<float, 3, 4> corners;
