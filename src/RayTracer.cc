@@ -12,6 +12,9 @@ void RayTracer::parse() {
 
   for (auto i = json["geometry"].begin(); i != json["geometry"].end(); ++i)
     geometries.push_back(Parser::getGeometry(*i));
+
+  for (auto i = json["light"].begin(); i != json["light"].end(); ++i)
+    lights.push_back(Parser::getLight(*i));
 }
 
 void RayTracer::render() {}

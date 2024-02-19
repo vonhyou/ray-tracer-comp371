@@ -1,5 +1,6 @@
 #include "Parser.h"
 #include "Geometry.h"
+#include "Light.h"
 
 #include <Eigen/Core>
 #include <string>
@@ -96,4 +97,38 @@ Rectangle *Parser::getRectangle(const nlohmann::json &j, float ka, float kd,
   Matrix<float, 3, 4> corners = getCorners(j);
 
   return new Rectangle(ka, kd, ks, ca, cd, cs, pc, corners);
+}
+
+Light *Parser::getLight(const nlohmann::json &j) {
+  Vector3f id = getVector3f(j["id"]);
+  Vector3f is = getVector3f(j["is"]);
+
+  Light *l;
+  if (j["type"].get<string>().compare("point"))
+    l = getAreaLight(j, id, is);
+  else
+    l = getPointLight(j, id, is);
+
+  if (j.contains("transform")) {
+    l->setTransform(getTransform(j["transform"]));
+  }
+
+  l->setGridSize(j.value("n", 0));
+  l->setUseCenter(j.value("usecenter", false));
+
+  return l;
+}
+
+AreaLight *Parser::getAreaLight(const nlohmann::json &j, const Vector3f &id,
+                                const Vector3f &is) {
+  Matrix<float, 3, 4> corners = getCorners(j);
+
+  return new AreaLight(id, is, corners);
+}
+
+PointLight *Parser::getPointLight(const nlohmann::json &j, const Vector3f &id,
+                                  const Vector3f &is) {
+  Vector3f center = getVector3f(j["centre"]);
+
+  return new PointLight(id, is, center);
 }

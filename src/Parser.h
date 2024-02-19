@@ -14,8 +14,10 @@ public:
   static Scene *getScene(const nlohmann::json &);
 
 private:
-  static PointLight *getPointLight(const nlohmann::json &);
-  static AreaLight *getAreaLight(const nlohmann::json &);
+  static PointLight *getPointLight(const nlohmann::json &, const Vector3f &,
+                                   const Vector3f &);
+  static AreaLight *getAreaLight(const nlohmann::json &, const Vector3f &,
+                                 const Vector3f &);
   static Rectangle *getRectangle(const nlohmann::json &, float, float, float,
                                  const Vector3f &, const Vector3f &,
                                  const Vector3f &, float);
