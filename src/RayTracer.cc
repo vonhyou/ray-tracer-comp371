@@ -4,6 +4,7 @@
 #include "Ray.h"
 
 #include <Eigen/Core>
+#include <Eigen/src/Core/Matrix.h>
 #include <cmath>
 
 void RayTracer::parse() {
@@ -17,25 +18,9 @@ void RayTracer::parse() {
     lights.push_back(Parser::getLight(*i));
 }
 
-Ray getRay(int x, int y, const Vector3f &camPos, const Vector3f &lookat,
-           float fov, int width, int height) {
-  float focalLength = lookat.norm();
-  float theta = fov / 180 * 3.14159;
-  float h = tan(theta / 2);
-  float viewportHeight = 2 * h * focalLength;
-  float viewportWidth = viewportHeight * (float)width / height;
-  Vector3f viewportU = Vector3f(viewportWidth, 0, 0);
-  Vector3f viewportV = Vector3f(0, -viewportHeight, 0);
-
-  Vector3f deltaU = viewportU / width;
-  Vector3f deltaV = viewportV / height;
-
-  Vector3f viewportUpperLeft = camPos - lookat - viewportU / 2 - viewportV / 2;
-  Vector3f pixelUpperLeftPos = viewportUpperLeft + 0.5 * (deltaU + deltaV);
-
-  Vector3f pixelCenter = pixelUpperLeftPos + (x * deltaU) + (y * deltaV);
-
-  return Ray(camPos, pixelCenter - camPos);
+Ray getRay(int x, int y, const Vector3f &camPos, const Vector3f &pxUpperLeft,
+           const Vector3f &du, const Vector3f &dv) {
+  return Ray(camPos, pxUpperLeft + x * du + y * dv - camPos);
 }
 
 void RayTracer::render(Scene *scene) {
@@ -45,11 +30,20 @@ void RayTracer::render(Scene *scene) {
   Vector3f cameraPos = scene->getCenter();
   Vector3f lookAt = scene->getLookAt();
   Vector3f up = scene->getUpVector();
+  float vpHeight = 2 * tan(fov / 180 * 3.14159265 / 2) * lookAt.norm();
+  float vpWidth = vpHeight * width / height;
+  Vector3f vpU = Vector3f(vpWidth, 0, 0);
+  Vector3f vpV = Vector3f(0, -vpHeight, 0);
+  Vector3f du = vpU / width;
+  Vector3f dv = vpV / height;
+
+  Vector3f vpUpperLeft = cameraPos - lookAt - vpU / 2.0 - vpV / 2.0;
+  Vector3f pxUpperLeft = vpUpperLeft + (du + dv) / 2.0;
 
   Buffer buffer(width * height * 3);
   for (int y = 0; y < height; ++y)
     for (int x = 0; x < width; ++x) {
-      Ray ray = getRay(x, y, cameraPos, lookAt, fov, width, height);
+      Ray ray = getRay(x, y, cameraPos, pxUpperLeft, du, dv);
 
       for (auto geometry : geometries)
         if (geometry->intersect(ray)) {
