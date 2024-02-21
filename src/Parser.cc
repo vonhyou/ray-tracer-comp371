@@ -95,8 +95,12 @@ Rectangle *Parser::getRectangle(const nlohmann::json &j, float ka, float kd,
                                 const Vector3f &cd, const Vector3f &cs,
                                 float pc) {
   Matrix<float, 3, 4> corners = getCorners(j);
+  Vector3f p1 = getVector3f(j["p1"]);
+  Vector3f p2 = getVector3f(j["p2"]);
+  Vector3f p3 = getVector3f(j["p3"]);
+  Vector3f p4 = getVector3f(j["p4"]);
 
-  return new Rectangle(ka, kd, ks, ca, cd, cs, pc, corners);
+  return new Rectangle(ka, kd, ks, ca, cd, cs, pc, p1, p2, p3, p4);
 }
 
 Light *Parser::getLight(const nlohmann::json &j) {

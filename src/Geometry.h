@@ -49,14 +49,15 @@ private:
 class Rectangle : public Geometry {
 public:
   Rectangle(float ka, float kd, float ks, const Vector3f &ca, const Vector3f cd,
-            const Vector3f &cs, float pc, const Matrix<float, 3, 4> &corners)
-      : Geometry(Type::RECTANGLE, ka, kd, ks, ca, cd, cs, pc),
-        corners(corners) {}
+            const Vector3f &cs, float pc, const Vector3f &p1,
+            const Vector3f &p2, const Vector3f &p3, const Vector3f &p4)
+      : Geometry(Type::RECTANGLE, ka, kd, ks, ca, cd, cs, pc), p1(p1), p2(p2),
+        p3(p3), p4(p4) {}
 
   bool intersect(const Ray &) const override;
 
 private:
-  Matrix<float, 3, 4> corners;
+  Vector3f p1, p2, p3, p4;
 };
 
 #endif // !GEOMETRY_H_
