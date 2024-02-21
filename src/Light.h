@@ -46,14 +46,14 @@ private:
 
 class AreaLight : public Light {
 public:
-  AreaLight(const Vector3f &id, const Vector3f &is,
-            const Matrix<float, 3, 4> &corners)
-      : Light(Type::Area, id, is), corners(corners) {}
+  AreaLight(const Vector3f &id, const Vector3f &is, const Vector3f &p1,
+            const Vector3f &p2, const Vector3f &p3, const Vector3f &p4)
+      : Light(Type::Area, id, is), p1(p1), p2(p2), p3(p3), p4(p4) {}
 
   virtual void illumination() const override;
 
 private:
-  Matrix<float, 3, 4> corners; // stores `p1`, `p2`, `p3` and `p4`
+  Vector3f p1, p2, p3, p4;
 };
 
 #endif // !LIGHT_H_
