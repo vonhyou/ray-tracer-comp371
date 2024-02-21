@@ -31,12 +31,12 @@ void RayTracer::render(Scene *scene) {
   Vector3f up = scene->getUpVector();
   float vpHeight = 2 * tan(fov / 180 * M_PI / 2) * lookAt.norm();
   float vpWidth = vpHeight * width / height;
-  Vector3f vpU = Vector3f(-vpWidth, 0, 0);
-  Vector3f vpV = Vector3f(0, vpHeight, 0);
+  Vector3f vpU = Vector3f(vpWidth, 0, 0);
+  Vector3f vpV = Vector3f(0, -vpHeight, 0);
   Vector3f du = vpU / width;
   Vector3f dv = vpV / height;
 
-  Vector3f vpUpperLeft = cameraPos - lookAt - vpU / 2.0 - vpV / 2.0;
+  Vector3f vpUpperLeft = cameraPos + lookAt - vpU / 2.0 - vpV / 2.0;
   Vector3f pxUpperLeft = vpUpperLeft + (du + dv) / 2.0;
 
   Buffer buffer(width * height * 3);
