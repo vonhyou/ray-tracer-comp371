@@ -72,15 +72,6 @@ Geometry *Parser::getGeometry(const nlohmann::json &j) {
   return g;
 }
 
-// helper function to get four corners of a rectangle
-const Matrix<float, 3, 4> getCorners(const nlohmann::json &j) {
-  Matrix<float, 3, 4> corners;
-  for (int i = 0; i < 4; ++i) {
-    corners.col(i) = getVector3f(j["p" + std::to_string(i + 1)]);
-  }
-  return corners;
-}
-
 Sphere *Parser::getSphere(const nlohmann::json &j, float ka, float kd, float ks,
                           const Vector3f &ca, const Vector3f &cd,
                           const Vector3f &cs, float pc) {
@@ -94,9 +85,12 @@ Rectangle *Parser::getRectangle(const nlohmann::json &j, float ka, float kd,
                                 float ks, const Vector3f &ca,
                                 const Vector3f &cd, const Vector3f &cs,
                                 float pc) {
-  Matrix<float, 3, 4> corners = getCorners(j);
+  Vector3f p1 = getVector3f(j["p1"]);
+  Vector3f p2 = getVector3f(j["p2"]);
+  Vector3f p3 = getVector3f(j["p3"]);
+  Vector3f p4 = getVector3f(j["p4"]);
 
-  return new Rectangle(ka, kd, ks, ca, cd, cs, pc, corners);
+  return new Rectangle(ka, kd, ks, ca, cd, cs, pc, p1, p2, p3, p4);
 }
 
 Light *Parser::getLight(const nlohmann::json &j) {
@@ -121,9 +115,12 @@ Light *Parser::getLight(const nlohmann::json &j) {
 
 AreaLight *Parser::getAreaLight(const nlohmann::json &j, const Vector3f &id,
                                 const Vector3f &is) {
-  Matrix<float, 3, 4> corners = getCorners(j);
 
-  return new AreaLight(id, is, corners);
+  Vector3f p1 = getVector3f(j["p1"]);
+  Vector3f p2 = getVector3f(j["p2"]);
+  Vector3f p3 = getVector3f(j["p3"]);
+  Vector3f p4 = getVector3f(j["p4"]);
+  return new AreaLight(id, is, p1, p2, p3, p4);
 }
 
 PointLight *Parser::getPointLight(const nlohmann::json &j, const Vector3f &id,
