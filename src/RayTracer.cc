@@ -4,7 +4,6 @@
 #include "Ray.h"
 
 #include <Eigen/Core>
-#include <Eigen/src/Core/Matrix.h>
 #include <cmath>
 
 void RayTracer::parse() {
