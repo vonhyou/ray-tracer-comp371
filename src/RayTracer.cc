@@ -40,6 +40,13 @@ void RayTracer::render(Scene *scene) {
   Vector3f pxUpperLeft = vpUpperLeft + (du + dv) / 2.0;
 
   Buffer buffer(width * height * 3);
+  Vector3f bgc = scene->getBackgroundColor();
+  for (int i = 0; i < width * height; ++i) {
+    buffer[i * 3] = bgc.x();
+    buffer[i * 3 + 1] = bgc.y();
+    buffer[i * 3 + 2] = bgc.z();
+  }
+
   for (int y = 0; y < height; ++y)
     for (int x = 0; x < width; ++x) {
       Ray ray = getRay(x, y, cameraPos, pxUpperLeft, du, dv);
