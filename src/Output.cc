@@ -10,7 +10,7 @@ void Output::write() {
     for (unsigned int x = 0; x < width; ++x)
       fout << (char)(255.0f * red[y * width + x])
            << (char)(255.0f * green[y * width + x])
-           << (char)(255.0f * blue[y * height + x]);
+           << (char)(255.0f * blue[y * width + x]);
   fout.close();
 }
 

@@ -12,9 +12,10 @@ using std::vector;
 class Output {
 public:
   Output(const Vector3f &bgc, string path, int w, int h)
-      : red(vector<float>(w * h, bgc.x())),
-        green(vector<float>(w * h, bgc.y())),
-        blue(vector<float>(w * h, bgc.z())), path(path), width(w), height(h) {}
+      : red(vector<float>(w * h + 1, bgc.x())),
+        green(vector<float>(w * h + 1, bgc.y())),
+        blue(vector<float>(w * h + 1, bgc.z())), path(path), width(w),
+        height(h) {}
 
   void write();
 

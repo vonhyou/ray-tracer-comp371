@@ -2,6 +2,10 @@
 
 #include <Eigen/Dense>
 
+Vector3f Geometry::diffuse() const { return cd; }
+Vector3f Geometry::specular() const { return cs; }
+Vector3f Geometry::ambient() const { return ca; }
+
 void Geometry::setTransform(const Matrix4f &transform) {
   this->transform = transform;
 }

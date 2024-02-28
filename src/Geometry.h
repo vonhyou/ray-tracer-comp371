@@ -29,6 +29,9 @@ protected:
   Matrix4f transform = Matrix4f::Identity();
 
 public:
+  Vector3f diffuse() const;
+  Vector3f specular() const;
+  Vector3f ambient() const;
   void setTransform(const Matrix4f &);
 };
 

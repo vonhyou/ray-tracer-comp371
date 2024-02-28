@@ -47,14 +47,16 @@ void RayTracer::render(Scene *scene) {
     for (int x = 0; x < width; ++x) {
       Ray ray = getRay(x, y, cameraPos, pxUpperLeft, du, dv);
 
-      for (auto geometry : geometries)
-        if (geometry->intersect(ray)) {
-          buffer->r(y * width + x, 1);
-          buffer->g(y * width + x, 1);
-          buffer->b(y * width + x, 1);
+      for (auto g : geometries)
+        if (g->intersect(ray)) {
+          Vector3f diffuse = g->diffuse();
+          buffer->r(y * width + x, diffuse.x());
+          buffer->g(y * width + x, diffuse.y());
+          buffer->b(y * width + x, diffuse.z());
           break;
         }
     }
+
   outputs.push_back(buffer);
 }
 
