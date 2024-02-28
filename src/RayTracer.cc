@@ -1,5 +1,6 @@
 #include "RayTracer.h"
 #include "../external/simpleppm.h"
+#include "Output.h"
 #include "Parser.h"
 #include "Ray.h"
 
@@ -39,13 +40,8 @@ void RayTracer::render(Scene *scene) {
   Vector3f vpUpperLeft = cameraPos + lookAt - vpU / 2.0 - vpV / 2.0;
   Vector3f pxUpperLeft = vpUpperLeft + (du + dv) / 2.0;
 
-  Buffer buffer(width * height * 3);
-  Vector3f bgc = scene->getBackgroundColor();
-  for (int i = 0; i < width * height; ++i) {
-    buffer[i * 3] = bgc.x();
-    buffer[i * 3 + 1] = bgc.y();
-    buffer[i * 3 + 2] = bgc.z();
-  }
+  Output *buffer =
+      new Output(scene->getBackgroundColor(), scene->getName(), width, height);
 
   for (int y = 0; y < height; ++y)
     for (int x = 0; x < width; ++x) {
@@ -53,23 +49,18 @@ void RayTracer::render(Scene *scene) {
 
       for (auto geometry : geometries)
         if (geometry->intersect(ray)) {
-          buffer[3 * y * width + 3 * x + 0] = 1;
-          buffer[3 * y * width + 3 * x + 1] = 1;
-          buffer[3 * y * width + 3 * x + 2] = 1;
+          buffer->r(y * width + x, 1);
+          buffer->g(y * width + x, 1);
+          buffer->b(y * width + x, 1);
           break;
         }
     }
-
-  Task *task = new Task(scene, buffer);
-  tasks.push_back(task);
+  outputs.push_back(buffer);
 }
 
-void RayTracer::output(Task *task) {
-  string path = task->first->getName();
-  int width = task->first->getWidth();
-  int height = task->first->getHeight();
-
-  save_ppm(path, task->second, width, height);
+void RayTracer::output() {
+  for (auto output : outputs)
+    output->write();
 }
 
 void RayTracer::run() {
@@ -78,6 +69,5 @@ void RayTracer::run() {
   for (auto scene : scenes)
     render(scene);
 
-  for (auto task : tasks)
-    output(task);
+  output();
 }
