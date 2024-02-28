@@ -1,6 +1,7 @@
 #ifndef GEOMETRY_H_
 #define GEOMETRY_H_
 
+#include "Optional.h"
 #include "Ray.h"
 
 #include <Eigen/Core>
@@ -8,6 +9,7 @@
 using Eigen::Matrix;
 using Eigen::Matrix4f;
 using Eigen::Vector3f;
+using utils::Optional;
 
 // Abstract class for Geometries
 class Geometry {
@@ -15,7 +17,7 @@ public:
   enum class Type { SPHERE, RECTANGLE };
 
   virtual ~Geometry() = default;
-  virtual bool intersect(const Ray &) const = 0;
+  virtual Optional<float> intersect(const Ray &) const = 0;
 
 protected:
   Geometry(Type type, float ka, float kd, float ks, const Vector3f &ca,
@@ -42,7 +44,7 @@ public:
       : Geometry(Type::SPHERE, ka, kd, ks, ca, cd, cs, pc), radius(radius),
         center(center) {}
 
-  bool intersect(const Ray &) const override;
+  Optional<float> intersect(const Ray &) const override;
 
 private:
   float radius;
@@ -57,7 +59,7 @@ public:
       : Geometry(Type::RECTANGLE, ka, kd, ks, ca, cd, cs, pc), p1(p1), p2(p2),
         p3(p3), p4(p4) {}
 
-  bool intersect(const Ray &) const override;
+  Optional<float> intersect(const Ray &) const override;
 
 private:
   Vector3f p1, p2, p3, p4;

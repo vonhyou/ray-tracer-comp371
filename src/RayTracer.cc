@@ -1,11 +1,15 @@
 #include "RayTracer.h"
 #include "../external/simpleppm.h"
+#include "HitRecord.h"
 #include "Output.h"
 #include "Parser.h"
 #include "Ray.h"
 
 #include <Eigen/Core>
 #include <cmath>
+#include <queue>
+
+using std::priority_queue;
 
 void RayTracer::parse() {
   for (auto i = json["output"].begin(); i != json["output"].end(); ++i)
@@ -46,15 +50,20 @@ void RayTracer::render(Scene *scene) {
   for (int y = 0; y < height; ++y)
     for (int x = 0; x < width; ++x) {
       Ray ray = getRay(x, y, cameraPos, pxUpperLeft, du, dv);
+      priority_queue<HitRecord> records;
+      for (auto g : geometries) {
+        Optional<float> t = g->intersect(ray);
+        if (t.hasValue())
+          records.push(HitRecord(t.value(), g));
+      }
 
-      for (auto g : geometries)
-        if (g->intersect(ray)) {
-          Vector3f diffuse = g->diffuse();
-          buffer->r(y * width + x, diffuse.x());
-          buffer->g(y * width + x, diffuse.y());
-          buffer->b(y * width + x, diffuse.z());
-          break;
-        }
+      if (!records.empty()) {
+        HitRecord hit = records.top();
+        Vector3f diffuse = hit.geometry()->diffuse();
+        buffer->r(y * width + x, diffuse.x());
+        buffer->g(y * width + x, diffuse.y());
+        buffer->b(y * width + x, diffuse.z());
+      }
     }
 
   outputs.push_back(buffer);
