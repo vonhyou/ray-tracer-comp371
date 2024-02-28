@@ -10,13 +10,13 @@ void Output::write() {
     for (unsigned int x = 0; x < width; ++x)
       fout << (char)(255.0f * red[y * width + x])
            << (char)(255.0f * green[y * width + x])
-           << (char)(255.0f * blue[y * width + x]);
+           << (char)(255.0f * blue[y * height + x]);
   fout.close();
 }
 
-float Output::r(int index) { return red.at(index); }
-float Output::g(int index) { return green.at(index); }
-float Output::b(int index) { return blue.at(index); }
+float Output::r(int index) const { return red.at(index); }
+float Output::g(int index) const { return green.at(index); }
+float Output::b(int index) const { return blue.at(index); }
 void Output::r(int index, float value) { red.at(index) = value; }
 void Output::g(int index, float value) { green.at(index) = value; }
 void Output::b(int index, float value) { blue.at(index) = value; }

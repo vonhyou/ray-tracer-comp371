@@ -27,11 +27,11 @@ private:
 
 public:
   void r(int, float);
-  float r(int);
+  float r(int) const;
   void g(int, float);
-  float g(int);
+  float g(int) const;
   void b(int, float);
-  float b(int);
+  float b(int) const;
 };
 
 #endif // !OUTPUT_H_
