@@ -9,6 +9,7 @@ Vector3f Geometry::ambient() const { return ca; }
 float Geometry::coefDiffuse() const { return kd; }
 float Geometry::coefSpecular() const { return ks; }
 float Geometry::coefAmbient() const { return ka; }
+float Geometry::getPhong() const { return phong; }
 
 void Geometry::setTransform(const Matrix4f &transform) {
   this->transform = transform;

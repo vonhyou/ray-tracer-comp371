@@ -10,6 +10,10 @@ Vector3f HitRecord::getPoint() const {
   return r.getOrigin() + t * r.getDirection();
 }
 
+Vector3f HitRecord::viewDirection() const {
+  return -r.getDirection().normalized();
+}
+
 Vector3f HitRecord::normal() const { return n; }
 
 void HitRecord::calcNormal() { n = g->getNormal(getPoint()); }

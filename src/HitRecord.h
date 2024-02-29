@@ -21,6 +21,7 @@ private:
 public:
   Geometry *geometry() const;
   Vector3f getPoint() const;
+  Vector3f viewDirection() const;
   Vector3f normal() const;
   void calcNormal();
 };

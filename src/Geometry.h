@@ -39,6 +39,7 @@ public:
   float coefDiffuse() const;
   float coefSpecular() const;
   float coefAmbient() const;
+  float getPhong() const;
   void setTransform(const Matrix4f &);
 };
 

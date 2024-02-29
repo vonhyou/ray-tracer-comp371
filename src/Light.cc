@@ -1,4 +1,6 @@
 #include "Light.h"
+#include <algorithm>
+#include <cmath>
 
 void Light::setTransform(const Matrix4f &transform) {
   this->transform = transform;
@@ -19,7 +21,18 @@ Vector3f PointLight::illumination(const HitRecord &hit,
     if (g != geometry && g->intersect(shadowRay).hasValue())
       return Vector3f::Zero();
 
-  return Vector3f::Zero();
+  float distance = (center - shadingPoint).norm();
+  float att = 1.0f / distance / distance;
+
+  Vector3f ambient_ = geometry->coefAmbient() * geometry->ambient();
+  Vector3f diffuse_ = att * geometry->coefDiffuse() * diffuse *
+                      std::max(0.0f, hit.normal().dot(rayDirection));
+
+  Vector3f halfWay = (hit.viewDirection() + rayDirection).normalized();
+  Vector3f specular_ =
+      att * geometry->coefSpecular() * specular *
+      pow(std::max(0.0f, hit.normal().dot(halfWay)), geometry->getPhong());
+  return ambient_ + diffuse_ + specular_;
 }
 
 Vector3f AreaLight::illumination(const HitRecord &hit,
