@@ -27,14 +27,25 @@ Ray getRay(int x, int y, const Vector3f &camPos, const Vector3f &pxUpperLeft,
   return Ray(camPos, pxUpperLeft + x * du + y * dv - camPos);
 }
 
+void RayTracer::calculateColor(const HitRecord &hit, Output *buffer, int i) {
+  buffer->r(i, 0);
+  buffer->g(i, 0);
+  buffer->b(i, 0);
+
+  for (auto light : lights) {
+    Vector3f contribution = light->illumination(hit, geometries);
+    buffer->r(i, buffer->r(i) + contribution.x());
+    buffer->g(i, buffer->g(i) + contribution.y());
+    buffer->b(i, buffer->b(i) + contribution.z());
+  }
+}
+
 void RayTracer::render(Scene *scene) {
   int width = scene->getWidth();
   int height = scene->getHeight();
-  float fov = scene->getFov();
   Vector3f cameraPos = scene->getCenter();
   Vector3f lookAt = scene->getLookAt();
-  Vector3f up = scene->getUpVector();
-  float vpHeight = 2 * tan(fov / 180 * M_PI / 2) * lookAt.norm();
+  float vpHeight = 2 * tan(scene->getFov() / 180 * M_PI / 2) * lookAt.norm();
   float vpWidth = vpHeight * width / height;
   Vector3f vpU = Vector3f(vpWidth, 0, 0);
   Vector3f vpV = Vector3f(0, -vpHeight, 0);
@@ -54,15 +65,13 @@ void RayTracer::render(Scene *scene) {
       for (auto g : geometries) {
         Optional<float> t = g->intersect(ray);
         if (t.hasValue())
-          records.push(HitRecord(t.value(), g));
+          records.push(HitRecord(t.value(), ray, g));
       }
 
       if (!records.empty()) {
         HitRecord hit = records.top();
-        Vector3f diffuse = hit.geometry()->diffuse();
-        buffer->r(y * width + x, diffuse.x());
-        buffer->g(y * width + x, diffuse.y());
-        buffer->b(y * width + x, diffuse.z());
+        hit.calcNormal();
+        calculateColor(hit, buffer, y * width + x);
       }
     }
 

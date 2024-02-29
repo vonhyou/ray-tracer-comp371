@@ -5,3 +5,11 @@ bool HitRecord::operator<(const HitRecord &other) const {
 }
 
 Geometry *HitRecord::geometry() const { return g; }
+
+Vector3f HitRecord::getPoint() const {
+  return r.getOrigin() + t * r.getDirection();
+}
+
+Vector3f HitRecord::normal() const { return n; }
+
+void HitRecord::calcNormal() { n = g->getNormal(getPoint()); }

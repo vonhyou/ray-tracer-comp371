@@ -5,6 +5,7 @@
 #include "Ray.h"
 
 #include <Eigen/Core>
+#include <Eigen/Dense>
 
 using Eigen::Matrix;
 using Eigen::Matrix4f;
@@ -18,6 +19,7 @@ public:
 
   virtual ~Geometry() = default;
   virtual Optional<float> intersect(const Ray &) const = 0;
+  virtual Vector3f getNormal(const Vector3f &) const = 0;
 
 protected:
   Geometry(Type type, float ka, float kd, float ks, const Vector3f &ca,
@@ -34,6 +36,9 @@ public:
   Vector3f diffuse() const;
   Vector3f specular() const;
   Vector3f ambient() const;
+  float coefDiffuse() const;
+  float coefSpecular() const;
+  float coefAmbient() const;
   void setTransform(const Matrix4f &);
 };
 
@@ -45,6 +50,7 @@ public:
         center(center) {}
 
   Optional<float> intersect(const Ray &) const override;
+  Vector3f getNormal(const Vector3f &) const override;
 
 private:
   float radius;
@@ -57,12 +63,14 @@ public:
             const Vector3f &cs, float pc, const Vector3f &p1,
             const Vector3f &p2, const Vector3f &p3, const Vector3f &p4)
       : Geometry(Type::RECTANGLE, ka, kd, ks, ca, cd, cs, pc), p1(p1), p2(p2),
-        p3(p3), p4(p4) {}
+        p3(p3), p4(p4), normal((p2 - p1).cross(p3 - p1).normalized()) {}
 
   Optional<float> intersect(const Ray &) const override;
+  Vector3f getNormal(const Vector3f &) const override;
 
 private:
   Vector3f p1, p2, p3, p4;
+  Vector3f normal;
 };
 
 #endif // !GEOMETRY_H_

@@ -20,10 +20,10 @@ private:
   std::vector<Scene *> scenes;
   std::vector<Light *> lights;
   std::vector<Geometry *> geometries;
-
   std::vector<Output *> outputs;
 
   void parse();
+  void calculateColor(const HitRecord &, Output *, int);
   void render(Scene *);
   void output();
 };

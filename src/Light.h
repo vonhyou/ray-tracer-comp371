@@ -1,11 +1,14 @@
 #ifndef LIGHT_H_
 #define LIGHT_H_
 
+#include "HitRecord.h"
 #include <Eigen/Core>
+#include <vector>
 
 using Eigen::Matrix;
 using Eigen::Matrix4f;
 using Eigen::Vector3f;
+using std::vector;
 
 // Abstract base class for Lights
 class Light {
@@ -13,7 +16,8 @@ public:
   enum class Type { Point, Area };
 
   virtual ~Light() = default;
-  virtual void illumination() const = 0;
+  virtual Vector3f illumination(const HitRecord &,
+                                const vector<Geometry *> &) const = 0;
 
 protected:
   Light(Type type, const Vector3f &id, const Vector3f &is)
@@ -38,7 +42,8 @@ public:
   PointLight(const Vector3f &id, const Vector3f &is, Vector3f &center)
       : Light(Type::Point, id, is), center(center) {}
 
-  virtual void illumination() const override;
+  virtual Vector3f illumination(const HitRecord &,
+                                const vector<Geometry *> &) const override;
 
 private:
   Vector3f center;
@@ -50,7 +55,8 @@ public:
             const Vector3f &p2, const Vector3f &p3, const Vector3f &p4)
       : Light(Type::Area, id, is), p1(p1), p2(p2), p3(p3), p4(p4) {}
 
-  virtual void illumination() const override;
+  virtual Vector3f illumination(const HitRecord &,
+                                const vector<Geometry *> &) const override;
 
 private:
   Vector3f p1, p2, p3, p4;

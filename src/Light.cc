@@ -8,6 +8,21 @@ void Light::setGridSize(unsigned int gridSize) { this->gridSize = gridSize; }
 
 void Light::setUseCenter(bool useCenter) { this->useCenter = useCenter; }
 
-void PointLight::illumination() const {}
+Vector3f PointLight::illumination(const HitRecord &hit,
+                                  const vector<Geometry *> &geometries) const {
+  Vector3f shadingPoint = hit.getPoint();
+  Vector3f rayDirection = (center - shadingPoint).normalized();
+  Geometry *geometry = hit.geometry();
+  Ray shadowRay(shadingPoint, rayDirection);
 
-void AreaLight::illumination() const {}
+  for (auto g : geometries)
+    if (g != geometry && g->intersect(shadowRay).hasValue())
+      return Vector3f::Zero();
+
+  return Vector3f::Zero();
+}
+
+Vector3f AreaLight::illumination(const HitRecord &hit,
+                                 const vector<Geometry *> &geometries) const {
+  return Vector3f::Zero();
+}

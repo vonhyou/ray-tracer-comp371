@@ -6,6 +6,9 @@
 Vector3f Geometry::diffuse() const { return cd; }
 Vector3f Geometry::specular() const { return cs; }
 Vector3f Geometry::ambient() const { return ca; }
+float Geometry::coefDiffuse() const { return kd; }
+float Geometry::coefSpecular() const { return ks; }
+float Geometry::coefAmbient() const { return ka; }
 
 void Geometry::setTransform(const Matrix4f &transform) {
   this->transform = transform;
@@ -31,6 +34,10 @@ Optional<float> Sphere::intersect(const Ray &r) const {
   return Optional<float>::nullopt;
 }
 
+Vector3f Sphere::getNormal(const Vector3f &p) const {
+  return (p - center).normalized();
+}
+
 bool isInRectangle(const Vector3f &p, const Vector3f &a, const Vector3f &b,
                    const Vector3f &c, const Vector3f &d, const Vector3f &n) {
   float s1 = (b - a).cross(p - a).dot(n);
@@ -43,8 +50,6 @@ bool isInRectangle(const Vector3f &p, const Vector3f &a, const Vector3f &b,
 }
 
 Optional<float> Rectangle::intersect(const Ray &r) const {
-  Vector3f normal = (p2 - p1).cross(p3 - p1).normalized();
-
   float denom = normal.dot(r.getDirection());
   if (abs(denom) < 1e-6f)
     return Optional<float>::nullopt;
@@ -58,3 +63,5 @@ Optional<float> Rectangle::intersect(const Ray &r) const {
   return isInRectangle(p, p1, p2, p3, p4, normal) ? Optional<float>(t)
                                                   : Optional<float>::nullopt;
 }
+
+Vector3f Rectangle::getNormal(const Vector3f &p) const { return normal; }
