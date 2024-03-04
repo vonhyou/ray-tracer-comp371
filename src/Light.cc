@@ -1,6 +1,7 @@
 #include "Light.h"
 #include <algorithm>
 #include <cmath>
+#include <iostream>
 
 void Light::setTransform(const Matrix4f &transform) {
   this->transform = transform;
@@ -52,11 +53,11 @@ Vector3f AreaLight::illumination(const HitRecord &hit,
   Vector3f color = Vector3f::Zero();
 
   if (useCenter) {
-    color += PointLight(*this, (u + v) / 2).illumination(hit, geometries);
+    color += PointLight(*this, p1 + (u + v) / 2).illumination(hit, geometries);
   } else {
     for (int y = 0; y < gridSize; ++y)
       for (int x = 0; x < gridSize; ++x)
-        color += PointLight(*this, (u * x + v * y) / gridSize)
+        color += PointLight(*this, p1 + (u * x + v * y) / gridSize)
                      .illumination(hit, geometries);
   }
 
