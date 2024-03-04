@@ -32,12 +32,13 @@ void RayTracer::calculateColor(const HitRecord &hit, Output *buffer, int i) {
   buffer->g(i, 0);
   buffer->b(i, 0);
 
-  for (auto light : lights) {
-    Vector3f contribution = light->illumination(hit, geometries);
-    buffer->r(i, buffer->r(i) + contribution.x());
-    buffer->g(i, buffer->g(i) + contribution.y());
-    buffer->b(i, buffer->b(i) + contribution.z());
-  }
+  for (auto light : lights)
+    if (light->isUse()) {
+      Vector3f contribution = light->illumination(hit, geometries);
+      buffer->r(i, buffer->r(i) + contribution.x());
+      buffer->g(i, buffer->g(i) + contribution.y());
+      buffer->b(i, buffer->b(i) + contribution.z());
+    }
 }
 
 void RayTracer::render(Scene *scene) {

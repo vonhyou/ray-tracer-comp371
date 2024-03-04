@@ -1,7 +1,6 @@
 #include "Light.h"
 #include <algorithm>
 #include <cmath>
-#include <iostream>
 
 void Light::setTransform(const Matrix4f &transform) {
   this->transform = transform;
@@ -11,9 +10,13 @@ void Light::setGridSize(unsigned int gridSize) { this->gridSize = gridSize; }
 
 void Light::setUseCenter(bool useCenter) { this->useCenter = useCenter; }
 
+void Light::setIsUse(bool isUse) { this->use = isUse; }
+
 Vector3f Light::getDiffuse() const { return diffuse; }
 
 Vector3f Light::getSpecular() const { return specular; }
+
+bool Light::isUse() const { return use; }
 
 Vector3f PointLight::illumination(const HitRecord &hit,
                                   const vector<Geometry *> &geometries) const {

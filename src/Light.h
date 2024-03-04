@@ -29,13 +29,16 @@ protected:
   Matrix4f transform = Matrix4f::Identity(); // optional member `transform`
   unsigned int gridSize = 0;                 // optional member `n`
   bool useCenter = false;                    // optional member `usecenter`
+  bool use = true;                           // this appears in a json file
 
 public:
   void setTransform(const Matrix4f &);
   void setGridSize(unsigned int);
   void setUseCenter(bool);
+  void setIsUse(bool);
   Vector3f getDiffuse() const;
   Vector3f getSpecular() const;
+  bool isUse() const;
 };
 
 class AreaLight : public Light {

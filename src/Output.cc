@@ -1,5 +1,6 @@
 #include "Output.h"
 
+#include <algorithm>
 #include <fstream>
 
 void Output::write() {
@@ -8,9 +9,9 @@ void Output::write() {
 
   for (unsigned int y = 0; y < height; ++y)
     for (unsigned int x = 0; x < width; ++x)
-      fout << (char)(255.0f * red[y * width + x])
-           << (char)(255.0f * green[y * width + x])
-           << (char)(255.0f * blue[y * width + x]);
+      fout << (char)std::min(255.0f, 255.0f * red[y * width + x])
+           << (char)std::min(255.0f, 255.0f * green[y * width + x])
+           << (char)std::min(255.0f, 255.0f * blue[y * width + x]);
   fout.close();
 }
 
