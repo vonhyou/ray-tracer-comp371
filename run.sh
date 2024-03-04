@@ -4,7 +4,7 @@ cmake -S . -B build
 cmake --build build
 
 # Check if the build was successful
-if [ ! -d "build" ]; then
+if [ ! -f "build/raytracer" ]; then
     echo "Build directory not found. Build failed."
     exit 1
 fi
@@ -19,3 +19,5 @@ for jsonfile in "assets"/*.json; do
         break
     fi
 done
+
+rm -f build/raytracer
