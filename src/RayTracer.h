@@ -7,7 +7,6 @@
 #include "Output.h"
 #include "Scene.h"
 
-#include <utility>
 #include <vector>
 
 class RayTracer {

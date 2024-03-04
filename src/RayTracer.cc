@@ -31,10 +31,11 @@ void RayTracer::calculateColor(const HitRecord &hit, Output *buffer, int i) {
   buffer->r(i, 0);
   buffer->g(i, 0);
   buffer->b(i, 0);
-
   for (auto light : lights)
     if (light->isUse()) {
-      Vector3f contribution = light->illumination(hit, geometries);
+      Vector3f contribution =
+          light->illumination(hit, geometries).cwiseMax(0.0f).cwiseMin(1.0f) /
+          lights.size();
       buffer->r(i, buffer->r(i) + contribution.x());
       buffer->g(i, buffer->g(i) + contribution.y());
       buffer->b(i, buffer->b(i) + contribution.z());
