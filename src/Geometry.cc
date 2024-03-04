@@ -1,18 +1,42 @@
 #include "Geometry.h"
 
 #include <Eigen/Dense>
+#include <cmath>
+
+Vector3f Geometry::diffuse() const { return cd; }
+Vector3f Geometry::specular() const { return cs; }
+Vector3f Geometry::ambient() const { return ca; }
+float Geometry::coefDiffuse() const { return kd; }
+float Geometry::coefSpecular() const { return ks; }
+float Geometry::coefAmbient() const { return ka; }
+float Geometry::getPhong() const { return phong; }
 
 void Geometry::setTransform(const Matrix4f &transform) {
   this->transform = transform;
 }
 
-bool Sphere::intersect(const Ray &r) const {
+Optional<float> Sphere::intersect(const Ray &r) const {
   Vector3f originCenter = r.getOrigin() - center;
   float a = r.getDirection().dot(r.getDirection());
   float b = 2.0f * originCenter.dot(r.getDirection());
   float c = originCenter.dot(originCenter) - radius * radius;
 
-  return b * b - 4 * a * c >= 0;
+  float delta = b * b - 4 * a * c;
+  if (delta >= 0) {
+    float t1 = (-b + sqrt(delta)) / 2.0f / a;
+    float t2 = (-b - sqrt(delta)) / 2.0f / a;
+    float mint = std::min(t1, t2);
+    float maxt = std::max(t1, t2);
+    return maxt <= 0
+               ? Optional<float>::nullopt
+               : (mint < 0 ? Optional<float>(maxt) : Optional<float>(mint));
+  }
+
+  return Optional<float>::nullopt;
+}
+
+Vector3f Sphere::getNormal(const Vector3f &p) const {
+  return (p - center).normalized();
 }
 
 bool isInRectangle(const Vector3f &p, const Vector3f &a, const Vector3f &b,
@@ -26,18 +50,19 @@ bool isInRectangle(const Vector3f &p, const Vector3f &a, const Vector3f &b,
          (s1 <= 0 && s2 <= 0 && s3 <= 0 && s4 <= 0);
 }
 
-bool Rectangle::intersect(const Ray &r) const {
-  Vector3f normal = (p2 - p1).cross(p3 - p1).normalized();
-
+Optional<float> Rectangle::intersect(const Ray &r) const {
   float denom = normal.dot(r.getDirection());
   if (abs(denom) < 1e-6f)
-    return false;
+    return Optional<float>::nullopt;
 
   float t = -normal.dot(r.getOrigin() - p1) / denom;
   if (t <= 0)
-    return false;
+    return Optional<float>::nullopt;
 
   Vector3f p = r.getOrigin() + t * r.getDirection();
 
-  return isInRectangle(p, p1, p2, p3, p4, normal);
+  return isInRectangle(p, p1, p2, p3, p4, normal) ? Optional<float>(t)
+                                                  : Optional<float>::nullopt;
 }
+
+Vector3f Rectangle::getNormal(const Vector3f &p) const { return normal; }

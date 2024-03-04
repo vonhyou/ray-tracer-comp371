@@ -1,10 +1,15 @@
 #include "RayTracer.h"
 #include "../external/simpleppm.h"
+#include "HitRecord.h"
+#include "Output.h"
 #include "Parser.h"
 #include "Ray.h"
 
 #include <Eigen/Core>
 #include <cmath>
+#include <queue>
+
+using std::priority_queue;
 
 void RayTracer::parse() {
   for (auto i = json["output"].begin(); i != json["output"].end(); ++i)
@@ -22,14 +27,27 @@ Ray getRay(int x, int y, const Vector3f &camPos, const Vector3f &pxUpperLeft,
   return Ray(camPos, pxUpperLeft + x * du + y * dv - camPos);
 }
 
+void RayTracer::calculateColor(const HitRecord &hit, Output *buffer, int i) {
+  buffer->r(i, 0);
+  buffer->g(i, 0);
+  buffer->b(i, 0);
+  for (auto light : lights)
+    if (light->isUse()) {
+      Vector3f contribution =
+          light->illumination(hit, geometries).cwiseMax(0.0f).cwiseMin(1.0f) /
+          lights.size();
+      buffer->r(i, buffer->r(i) + contribution.x());
+      buffer->g(i, buffer->g(i) + contribution.y());
+      buffer->b(i, buffer->b(i) + contribution.z());
+    }
+}
+
 void RayTracer::render(Scene *scene) {
   int width = scene->getWidth();
   int height = scene->getHeight();
-  float fov = scene->getFov();
   Vector3f cameraPos = scene->getCenter();
   Vector3f lookAt = scene->getLookAt();
-  Vector3f up = scene->getUpVector();
-  float vpHeight = 2 * tan(fov / 180 * M_PI / 2) * lookAt.norm();
+  float vpHeight = 2 * tan(scene->getFov() / 180 * M_PI / 2) * lookAt.norm();
   float vpWidth = vpHeight * width / height;
   Vector3f vpU = Vector3f(vpWidth, 0, 0);
   Vector3f vpV = Vector3f(0, -vpHeight, 0);
@@ -39,30 +57,32 @@ void RayTracer::render(Scene *scene) {
   Vector3f vpUpperLeft = cameraPos + lookAt - vpU / 2.0 - vpV / 2.0;
   Vector3f pxUpperLeft = vpUpperLeft + (du + dv) / 2.0;
 
-  Buffer buffer(width * height * 3);
+  Output *buffer =
+      new Output(scene->getBackgroundColor(), scene->getName(), width, height);
+
   for (int y = 0; y < height; ++y)
     for (int x = 0; x < width; ++x) {
       Ray ray = getRay(x, y, cameraPos, pxUpperLeft, du, dv);
+      priority_queue<HitRecord> records;
+      for (auto g : geometries) {
+        Optional<float> t = g->intersect(ray);
+        if (t.hasValue())
+          records.push(HitRecord(t.value(), ray, g));
+      }
 
-      for (auto geometry : geometries)
-        if (geometry->intersect(ray)) {
-          buffer[3 * y * width + 3 * x + 0] = 1;
-          buffer[3 * y * width + 3 * x + 1] = 1;
-          buffer[3 * y * width + 3 * x + 2] = 1;
-          break;
-        }
+      if (!records.empty()) {
+        HitRecord hit = records.top();
+        hit.calcNormal();
+        calculateColor(hit, buffer, y * width + x);
+      }
     }
 
-  Task *task = new Task(scene, buffer);
-  tasks.push_back(task);
+  outputs.push_back(buffer);
 }
 
-void RayTracer::output(Task *task) {
-  string path = task->first->getName();
-  int width = task->first->getWidth();
-  int height = task->first->getHeight();
-
-  save_ppm(path, task->second, width, height);
+void RayTracer::output() {
+  for (auto output : outputs)
+    output->write();
 }
 
 void RayTracer::run() {
@@ -71,6 +91,5 @@ void RayTracer::run() {
   for (auto scene : scenes)
     render(scene);
 
-  for (auto task : tasks)
-    output(task);
+  output();
 }
