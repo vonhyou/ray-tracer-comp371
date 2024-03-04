@@ -39,6 +39,7 @@ public:
   Vector3f getCenter() const;
   Vector3f getUpVector() const;
   Vector3f getLookAt() const;
+  Vector3f getBackgroundColor() const;
   void setRaysPerPixel(const Eigen::VectorXi &);
   void setAntialiasing(bool);
   void setTwoSideRender(bool);

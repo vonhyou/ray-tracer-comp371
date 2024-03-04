@@ -14,6 +14,8 @@ Vector3f Scene::getUpVector() const { return up; }
 
 Vector3f Scene::getLookAt() const { return lookAt; }
 
+Vector3f Scene::getBackgroundColor() const { return backgroundColor; }
+
 void Scene::setRaysPerPixel(const Eigen::VectorXi &raysPerPixel) {
   this->raysPerPixel = raysPerPixel;
 }

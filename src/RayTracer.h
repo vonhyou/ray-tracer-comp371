@@ -4,13 +4,10 @@
 #include "../external/json.hpp"
 #include "Geometry.h"
 #include "Light.h"
+#include "Output.h"
 #include "Scene.h"
 
-#include <utility>
 #include <vector>
-
-using Buffer = std::vector<double>;
-using Task = std::pair<Scene *, Buffer>;
 
 class RayTracer {
 public:
@@ -22,12 +19,12 @@ private:
   std::vector<Scene *> scenes;
   std::vector<Light *> lights;
   std::vector<Geometry *> geometries;
-
-  std::vector<Task *> tasks;
+  std::vector<Output *> outputs;
 
   void parse();
+  void calculateColor(const HitRecord &, Output *, int);
   void render(Scene *);
-  void output(Task *);
+  void output();
 };
 
 #endif // !RAY_TRACER_H_

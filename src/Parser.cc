@@ -109,6 +109,7 @@ Light *Parser::getLight(const nlohmann::json &j) {
 
   l->setGridSize(j.value("n", 0));
   l->setUseCenter(j.value("usecenter", false));
+  l->setIsUse(j.value("use", true));
 
   return l;
 }
