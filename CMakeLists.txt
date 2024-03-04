@@ -21,8 +21,8 @@ add_compile_options(-DSTUDENT_SOLUTION)
 
 # When testing large scenes the debug mode will be very slow
 # so switch to release
-set(CMAKE_BUILD_TYPE Debug)
-#set(CMAKE_BUILD_TYPE Release)
+#set(CMAKE_BUILD_TYPE Debug)
+set(CMAKE_BUILD_TYPE Release)
 
 set(CMAKE_CXX_STANDARD 14)
 

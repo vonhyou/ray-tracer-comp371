@@ -31,22 +31,11 @@ protected:
   bool useCenter = false;                    // optional member `usecenter`
 
 public:
-  // setters for optional members
   void setTransform(const Matrix4f &);
   void setGridSize(unsigned int);
   void setUseCenter(bool);
-};
-
-class PointLight : public Light {
-public:
-  PointLight(const Vector3f &id, const Vector3f &is, Vector3f &center)
-      : Light(Type::Point, id, is), center(center) {}
-
-  virtual Vector3f illumination(const HitRecord &,
-                                const vector<Geometry *> &) const override;
-
-private:
-  Vector3f center;
+  Vector3f getDiffuse() const;
+  Vector3f getSpecular() const;
 };
 
 class AreaLight : public Light {
@@ -60,6 +49,21 @@ public:
 
 private:
   Vector3f p1, p2, p3, p4;
+};
+
+class PointLight : public Light {
+public:
+  PointLight(const Vector3f &id, const Vector3f &is, const Vector3f &center)
+      : Light(Type::Point, id, is), center(center) {}
+
+  PointLight(const AreaLight &al, const Vector3f &center)
+      : PointLight(al.getDiffuse(), al.getSpecular(), center) {}
+
+  virtual Vector3f illumination(const HitRecord &,
+                                const vector<Geometry *> &) const override;
+
+private:
+  Vector3f center;
 };
 
 #endif // !LIGHT_H_
