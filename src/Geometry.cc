@@ -3,14 +3,14 @@
 #include <Eigen/Dense>
 #include <cmath>
 
-Vector3f Geometry::diffuse() const { return cd; }
-Vector3f Geometry::specular() const { return cs; }
-Vector3f Geometry::ambient() const { return ca; }
-float Geometry::coefDiffuse() const { return kd; }
-float Geometry::coefSpecular() const { return ks; }
-float Geometry::coefAmbient() const { return ka; }
-float Geometry::getPhong() const { return phong; }
-Geometry::Type Geometry::getType() const { return type; }
+Vector3f Geometry::cd() const { return cd_; }
+Vector3f Geometry::cs() const { return cs_; }
+Vector3f Geometry::ca() const { return ca_; }
+float Geometry::kd() const { return kd_; }
+float Geometry::ks() const { return ks_; }
+float Geometry::ka() const { return ka_; }
+float Geometry::phong() const { return phong_; }
+Geometry::Type Geometry::type() const { return type_; }
 
 void Geometry::setTransform(const Matrix4f &transform) {
   this->transform = transform;
@@ -36,7 +36,7 @@ Optional<float> Sphere::intersect(const Ray &r) const {
   return Optional<float>::nullopt;
 }
 
-Vector3f Sphere::getNormal(const Vector3f &p) const {
+Vector3f Sphere::normal(const Vector3f &p) const {
   return (p - center).normalized();
 }
 
@@ -52,18 +52,18 @@ bool isInRectangle(const Vector3f &p, const Vector3f &a, const Vector3f &b,
 }
 
 Optional<float> Rectangle::intersect(const Ray &r) const {
-  float denom = normal.dot(r.getDirection());
+  float denom = normal_.dot(r.getDirection());
   if (abs(denom) < 1e-6f)
     return Optional<float>::nullopt;
 
-  float t = -normal.dot(r.getOrigin() - p1) / denom;
+  float t = -normal_.dot(r.getOrigin() - p1) / denom;
   if (t <= 0)
     return Optional<float>::nullopt;
 
   Vector3f p = r.getOrigin() + t * r.getDirection();
 
-  return isInRectangle(p, p1, p2, p3, p4, normal) ? Optional<float>(t)
-                                                  : Optional<float>::nullopt;
+  return isInRectangle(p, p1, p2, p3, p4, normal_) ? Optional<float>(t)
+                                                   : Optional<float>::nullopt;
 }
 
-Vector3f Rectangle::getNormal(const Vector3f &p) const { return normal; }
+Vector3f Rectangle::normal(const Vector3f &p) const { return normal_; }

@@ -16,4 +16,4 @@ Vector3f HitRecord::viewDirection() const {
 
 Vector3f HitRecord::normal() const { return n; }
 
-void HitRecord::calcNormal() { n = g->getNormal(getPoint()); }
+void HitRecord::calcNormal() { n = g->normal(getPoint()); }

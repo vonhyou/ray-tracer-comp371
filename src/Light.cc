@@ -27,20 +27,19 @@ Vector3f PointLight::illumination(const HitRecord &hit,
 
   for (auto g : geometries)
     if (g != geometry && g->intersect(shadowRay).hasValue() &&
-        g->getType() == Geometry::Type::SPHERE)
+        g->type() == Geometry::Type::SPHERE)
       return Vector3f::Zero();
 
-  Vector3f ambient_ = geometry->coefAmbient() * geometry->ambient();
+  Vector3f ambient_ = geometry->ka() * geometry->ca();
 
-  Vector3f diffuse_ = geometry->coefDiffuse() * geometry->diffuse().array() *
+  Vector3f diffuse_ = geometry->kd() * geometry->cd().array() *
                       diffuse.array() *
                       std::max(0.0f, hit.normal().dot(rayDirection));
 
   Vector3f halfWay = (hit.viewDirection() + rayDirection).normalized();
   Vector3f specular_ =
-      geometry->coefSpecular() * geometry->specular().array() *
-      specular.array() *
-      pow(std::max(0.0f, hit.normal().dot(halfWay)), geometry->getPhong());
+      geometry->ks() * geometry->cs().array() * specular.array() *
+      pow(std::max(0.0f, hit.normal().dot(halfWay)), geometry->phong());
 
   return specular_ + ambient_ + diffuse_;
 }

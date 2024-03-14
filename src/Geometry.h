@@ -19,29 +19,30 @@ public:
 
   virtual ~Geometry() = default;
   virtual Optional<float> intersect(const Ray &) const = 0;
-  virtual Vector3f getNormal(const Vector3f &) const = 0;
+  virtual Vector3f normal(const Vector3f &) const = 0;
 
 protected:
   Geometry(Type type, float ka, float kd, float ks, const Vector3f &ca,
            const Vector3f &cd, const Vector3f &cs, float pc)
-      : type(type), ka(ka), kd(kd), ks(ks), ca(ca), cd(cd), cs(cs), phong(pc) {}
+      : type_(type), ka_(ka), kd_(kd), ks_(ks), ca_(ca), cd_(cd), cs_(cs),
+        phong_(pc) {}
 
-  Type type;
-  float ka, kd, ks;    // coefficients for ambient, diffuse and specular
-  Vector3f ca, cd, cs; // ambient, diffuse and specular reflection color
-  float phong;         // phone coefficient, for `pc`
+  Type type_;
+  float ka_, kd_, ks_;    // coefficients for ambient, diffuse and specular
+  Vector3f ca_, cd_, cs_; // ambient, diffuse and specular reflection color
+  float phong_;           // phone coefficient, for `pc`
   Matrix4f transform = Matrix4f::Identity();
 
 public:
-  Vector3f diffuse() const;
-  Vector3f specular() const;
-  Vector3f ambient() const;
-  float coefDiffuse() const;
-  float coefSpecular() const;
-  float coefAmbient() const;
-  float getPhong() const;
+  Vector3f cd() const;
+  Vector3f cs() const;
+  Vector3f ca() const;
+  float kd() const;
+  float ks() const;
+  float ka() const;
+  float phong() const;
+  Type type() const;
   void setTransform(const Matrix4f &);
-  Type getType() const;
 };
 
 class Sphere : public Geometry {
@@ -52,7 +53,7 @@ public:
         center(center) {}
 
   Optional<float> intersect(const Ray &) const override;
-  Vector3f getNormal(const Vector3f &) const override;
+  Vector3f normal(const Vector3f &) const override;
 
 private:
   float radius;
@@ -65,14 +66,14 @@ public:
             const Vector3f &cs, float pc, const Vector3f &p1,
             const Vector3f &p2, const Vector3f &p3, const Vector3f &p4)
       : Geometry(Type::RECTANGLE, ka, kd, ks, ca, cd, cs, pc), p1(p1), p2(p2),
-        p3(p3), p4(p4), normal((p2 - p1).cross(p3 - p1).normalized()) {}
+        p3(p3), p4(p4), normal_((p2 - p1).cross(p3 - p1).normalized()) {}
 
   Optional<float> intersect(const Ray &) const override;
-  Vector3f getNormal(const Vector3f &) const override;
+  Vector3f normal(const Vector3f &) const override;
 
 private:
   Vector3f p1, p2, p3, p4;
-  Vector3f normal;
+  Vector3f normal_;
 };
 
 #endif // !GEOMETRY_H_
