@@ -43,11 +43,11 @@ void RayTracer::calculateColor(const HitRecord &hit, Output *buffer, int i) {
 }
 
 void RayTracer::render(Scene *scene) {
-  int width = scene->getWidth();
-  int height = scene->getHeight();
-  Vector3f cameraPos = scene->getCenter();
-  Vector3f lookAt = scene->getLookAt();
-  float vpHeight = 2 * tan(scene->getFov() / 180 * M_PI / 2) * lookAt.norm();
+  int width = scene->width();
+  int height = scene->height();
+  Vector3f cameraPos = scene->center();
+  Vector3f lookAt = scene->lookAt();
+  float vpHeight = 2 * tan(scene->fov() / 180 * M_PI / 2) * lookAt.norm();
   float vpWidth = vpHeight * width / height;
   Vector3f vpU = Vector3f(vpWidth, 0, 0);
   Vector3f vpV = Vector3f(0, -vpHeight, 0);
@@ -58,7 +58,7 @@ void RayTracer::render(Scene *scene) {
   Vector3f pxUpperLeft = vpUpperLeft + (du + dv) / 2.0;
 
   Output *buffer =
-      new Output(scene->getBackgroundColor(), scene->getName(), width, height);
+      new Output(scene->backgroundColor(), scene->name(), width, height);
 
   for (int y = 0; y < height; ++y)
     for (int x = 0; x < width; ++x) {
