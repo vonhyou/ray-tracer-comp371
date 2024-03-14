@@ -23,7 +23,7 @@ private:
 
   void parse();
   void calculateColor(const HitRecord &, Output *, int);
-  void render(Scene *);
+  void render();
   void output();
 };
 

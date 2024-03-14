@@ -39,12 +39,13 @@ void RayTracer::calculateColor(const HitRecord &hit, Output *buffer, int i) {
   buffer->b(i, result.z());
 }
 
-void RayTracer::render(Scene *scene) {
-  int width = scene->width();
-  int height = scene->height();
-  Vector3f cameraPos = scene->center();
-  Vector3f lookAt = scene->lookAt();
-  float vpHeight = 2 * tan(scene->fov() / 180 * M_PI / 2) * lookAt.norm();
+void RayTracer::render() {
+  int width = Scene::current->width();
+  int height = Scene::current->height();
+  Vector3f cameraPos = Scene::current->center();
+  Vector3f lookAt = Scene::current->lookAt();
+  float vpHeight =
+      2 * tan(Scene ::current->fov() / 180 * M_PI / 2) * lookAt.norm();
   float vpWidth = vpHeight * width / height;
   Vector3f vpU = Vector3f(vpWidth, 0, 0);
   Vector3f vpV = Vector3f(0, -vpHeight, 0);
@@ -54,8 +55,8 @@ void RayTracer::render(Scene *scene) {
   Vector3f vpUpperLeft = cameraPos + lookAt - vpU / 2.0 - vpV / 2.0;
   Vector3f pxUpperLeft = vpUpperLeft + (du + dv) / 2.0;
 
-  Output *buffer =
-      new Output(scene->backgroundColor(), scene->name(), width, height);
+  Output *buffer = new Output(Scene::current->backgroundColor(),
+                              Scene::current->name(), width, height);
 
   for (int y = 0; y < height; ++y)
     for (int x = 0; x < width; ++x) {
@@ -87,7 +88,7 @@ void RayTracer::run() {
 
   for (auto scene : scenes) {
     Scene::current = scene;
-    render(scene);
+    render();
   }
 
   output();
