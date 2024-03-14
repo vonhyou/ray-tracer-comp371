@@ -1,4 +1,6 @@
 #include "Light.h"
+#include "Scene.h"
+
 #include <algorithm>
 #include <cmath>
 
@@ -30,7 +32,8 @@ Vector3f PointLight::illumination(const HitRecord &hit,
         g->type() == Geometry::Type::SPHERE)
       return Vector3f::Zero();
 
-  Vector3f ambient_ = geometry->ka() * geometry->ca();
+  Vector3f ambient_ =
+      geometry->ka() * geometry->ca().array() * Scene::current->ai().array();
 
   Vector3f diffuse_ = geometry->kd() * geometry->cd().array() * id_.array() *
                       std::max(0.0f, hit.normal().dot(rayDirection));

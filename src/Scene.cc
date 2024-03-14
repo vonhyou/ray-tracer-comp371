@@ -1,5 +1,7 @@
 #include "Scene.h"
 
+Scene *Scene::current = nullptr;
+
 string Scene::name() const { return name_; }
 
 int Scene::width() { return width_; }
@@ -7,6 +9,8 @@ int Scene::width() { return width_; }
 int Scene::height() { return height_; }
 
 float Scene::fov() { return fov_; }
+
+Vector3f Scene::ai() const { return ai_; }
 
 Vector3f Scene::center() const { return center_; }
 

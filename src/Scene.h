@@ -36,6 +36,7 @@ public:
   int width();
   int height();
   float fov();
+  Vector3f ai() const;
   Vector3f center() const;
   Vector3f up() const;
   Vector3f lookAt() const;
@@ -44,6 +45,7 @@ public:
   void setAntialiasing(bool);
   void setTwoSideRender(bool);
   void setGlobalIllum(bool);
+  static Scene *current;
 };
 
 #endif // !SCENE_H_

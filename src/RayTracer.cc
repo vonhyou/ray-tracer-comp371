@@ -85,8 +85,10 @@ void RayTracer::output() {
 void RayTracer::run() {
   parse();
 
-  for (auto scene : scenes)
+  for (auto scene : scenes) {
+    Scene::current = scene;
     render(scene);
+  }
 
   output();
 }
