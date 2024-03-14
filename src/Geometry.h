@@ -41,6 +41,7 @@ public:
   float coefAmbient() const;
   float getPhong() const;
   void setTransform(const Matrix4f &);
+  Type getType() const;
 };
 
 class Sphere : public Geometry {

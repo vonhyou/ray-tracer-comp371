@@ -1,6 +1,7 @@
 #include "Light.h"
 #include <algorithm>
 #include <cmath>
+#include <iostream>
 
 void Light::setTransform(const Matrix4f &transform) {
   this->transform = transform;
@@ -26,7 +27,8 @@ Vector3f PointLight::illumination(const HitRecord &hit,
   Ray shadowRay(shadingPoint, rayDirection);
 
   for (auto g : geometries)
-    if (g != geometry && g->intersect(shadowRay).hasValue())
+    if (g != geometry && g->intersect(shadowRay).hasValue() &&
+        g->getType() == Geometry::Type::SPHERE)
       return Vector3f::Zero();
 
   Vector3f ambient_ = geometry->coefAmbient() * geometry->ambient();
@@ -55,9 +57,12 @@ Vector3f AreaLight::illumination(const HitRecord &hit,
     color += PointLight(*this, p1 + (u + v) / 2).illumination(hit, geometries);
   } else {
     for (int y = 0; y < gridSize; ++y)
-      for (int x = 0; x < gridSize; ++x)
-        color += PointLight(*this, p1 + (u * x + v * y) / gridSize)
-                     .illumination(hit, geometries);
+      for (int x = 0; x < gridSize; ++x) {
+        Vector3f contribution =
+            PointLight(*this, p1 + (u * x + v * y) / gridSize)
+                .illumination(hit, geometries);
+        color += contribution;
+      }
   }
 
   return color / gridSize / gridSize;

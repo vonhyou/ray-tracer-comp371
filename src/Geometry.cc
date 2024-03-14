@@ -10,6 +10,7 @@ float Geometry::coefDiffuse() const { return kd; }
 float Geometry::coefSpecular() const { return ks; }
 float Geometry::coefAmbient() const { return ka; }
 float Geometry::getPhong() const { return phong; }
+Geometry::Type Geometry::getType() const { return type; }
 
 void Geometry::setTransform(const Matrix4f &transform) {
   this->transform = transform;
