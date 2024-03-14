@@ -12,9 +12,9 @@ void Light::setUseCenter(bool useCenter) { this->useCenter = useCenter; }
 
 void Light::setIsUse(bool isUse) { this->use = isUse; }
 
-Vector3f Light::getDiffuse() const { return diffuse; }
+Vector3f Light::id() const { return id_; }
 
-Vector3f Light::getSpecular() const { return specular; }
+Vector3f Light::is() const { return is_; }
 
 bool Light::isUse() const { return use; }
 
@@ -32,13 +32,12 @@ Vector3f PointLight::illumination(const HitRecord &hit,
 
   Vector3f ambient_ = geometry->ka() * geometry->ca();
 
-  Vector3f diffuse_ = geometry->kd() * geometry->cd().array() *
-                      diffuse.array() *
+  Vector3f diffuse_ = geometry->kd() * geometry->cd().array() * id_.array() *
                       std::max(0.0f, hit.normal().dot(rayDirection));
 
   Vector3f halfWay = (hit.viewDirection() + rayDirection).normalized();
   Vector3f specular_ =
-      geometry->ks() * geometry->cs().array() * specular.array() *
+      geometry->ks() * geometry->cs().array() * is_.array() *
       pow(std::max(0.0f, hit.normal().dot(halfWay)), geometry->phong());
 
   return specular_ + ambient_ + diffuse_;

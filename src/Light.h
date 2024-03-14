@@ -21,11 +21,11 @@ public:
 
 protected:
   Light(Type type, const Vector3f &id, const Vector3f &is)
-      : type(type), diffuse(id), specular(is) {}
+      : type_(type), id_(id), is_(is) {}
 
-  Type type;
-  Vector3f diffuse;
-  Vector3f specular;
+  Type type_;
+  Vector3f id_;
+  Vector3f is_;
   Matrix4f transform = Matrix4f::Identity(); // optional member `transform`
   unsigned int gridSize = 0;                 // optional member `n`
   bool useCenter = false;                    // optional member `usecenter`
@@ -36,8 +36,8 @@ public:
   void setGridSize(unsigned int);
   void setUseCenter(bool);
   void setIsUse(bool);
-  Vector3f getDiffuse() const;
-  Vector3f getSpecular() const;
+  Vector3f id() const;
+  Vector3f is() const;
   bool isUse() const;
 };
 
@@ -60,7 +60,7 @@ public:
       : Light(Type::Point, id, is), center(center) {}
 
   PointLight(const AreaLight &al, const Vector3f &center)
-      : PointLight(al.getDiffuse(), al.getSpecular(), center) {}
+      : PointLight(al.id(), al.is(), center) {}
 
   virtual Vector3f illumination(const HitRecord &,
                                 const vector<Geometry *> &) const override;
