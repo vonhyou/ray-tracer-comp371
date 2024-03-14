@@ -28,18 +28,15 @@ Ray getRay(int x, int y, const Vector3f &camPos, const Vector3f &pxUpperLeft,
 }
 
 void RayTracer::calculateColor(const HitRecord &hit, Output *buffer, int i) {
-  buffer->r(i, 0);
-  buffer->g(i, 0);
-  buffer->b(i, 0);
   Vector3f result(0, 0, 0);
   for (auto light : lights)
-    if (light->isUse())
-      result += light->illumination(hit, geometries);
+    result += light->isUse() ? light->illumination(hit, geometries)
+                             : Vector3f::Zero();
 
   result = result.cwiseMax(0.0f).cwiseMin(1.0f);
-  buffer->r(i, buffer->r(i) + result.x());
-  buffer->g(i, buffer->g(i) + result.y());
-  buffer->b(i, buffer->b(i) + result.z());
+  buffer->r(i, result.x());
+  buffer->g(i, result.y());
+  buffer->b(i, result.z());
 }
 
 void RayTracer::render(Scene *scene) {
