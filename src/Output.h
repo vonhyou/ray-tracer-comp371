@@ -33,6 +33,8 @@ public:
   float g(int) const;
   void b(int, float);
   float b(int) const;
+
+  static Output *current;
 };
 
 #endif // !OUTPUT_H_

@@ -22,7 +22,7 @@ private:
   std::vector<Output *> outputs;
 
   void parse();
-  void calculateColor(const HitRecord &, Output *, int);
+  void calculateColor(const HitRecord &, int);
   void render();
   void output();
 };

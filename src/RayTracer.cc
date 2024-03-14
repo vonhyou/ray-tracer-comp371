@@ -27,16 +27,16 @@ Ray getRay(int x, int y, const Vector3f &camPos, const Vector3f &pxUpperLeft,
   return Ray(camPos, pxUpperLeft + x * du + y * dv - camPos);
 }
 
-void RayTracer::calculateColor(const HitRecord &hit, Output *buffer, int i) {
+void RayTracer::calculateColor(const HitRecord &hit, int i) {
   Vector3f result(0, 0, 0);
   for (auto light : lights)
     result += light->isUse() ? light->illumination(hit, geometries)
                              : Vector3f::Zero();
 
   result = result.cwiseMax(0.0f).cwiseMin(1.0f);
-  buffer->r(i, result.x());
-  buffer->g(i, result.y());
-  buffer->b(i, result.z());
+  Output::current->r(i, result.x());
+  Output::current->g(i, result.y());
+  Output::current->b(i, result.z());
 }
 
 void RayTracer::render() {
@@ -55,8 +55,8 @@ void RayTracer::render() {
   Vector3f vpUpperLeft = cameraPos + lookAt - vpU / 2.0 - vpV / 2.0;
   Vector3f pxUpperLeft = vpUpperLeft + (du + dv) / 2.0;
 
-  Output *buffer = new Output(Scene::current->backgroundColor(),
-                              Scene::current->name(), width, height);
+  Output::current = new Output(Scene::current->backgroundColor(),
+                               Scene::current->name(), width, height);
 
   for (int y = 0; y < height; ++y)
     for (int x = 0; x < width; ++x) {
@@ -71,11 +71,9 @@ void RayTracer::render() {
       if (!records.empty()) {
         HitRecord hit = records.top();
         hit.calcNormal();
-        calculateColor(hit, buffer, y * width + x);
+        calculateColor(hit, y * width + x);
       }
     }
-
-  outputs.push_back(buffer);
 }
 
 void RayTracer::output() {
@@ -89,7 +87,6 @@ void RayTracer::run() {
   for (auto scene : scenes) {
     Scene::current = scene;
     render();
+    Output::current->write();
   }
-
-  output();
 }
