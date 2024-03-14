@@ -1,7 +1,6 @@
 #include "Light.h"
 #include <algorithm>
 #include <cmath>
-#include <iostream>
 
 void Light::setTransform(const Matrix4f &transform) {
   this->transform = transform;
