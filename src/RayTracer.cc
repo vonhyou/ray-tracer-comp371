@@ -27,27 +27,25 @@ Ray getRay(int x, int y, const Vector3f &camPos, const Vector3f &pxUpperLeft,
   return Ray(camPos, pxUpperLeft + x * du + y * dv - camPos);
 }
 
-void RayTracer::calculateColor(const HitRecord &hit, Output *buffer, int i) {
-  buffer->r(i, 0);
-  buffer->g(i, 0);
-  buffer->b(i, 0);
+void RayTracer::calculateColor(const HitRecord &hit, int i) {
+  Vector3f result(0, 0, 0);
   for (auto light : lights)
-    if (light->isUse()) {
-      Vector3f contribution =
-          light->illumination(hit, geometries).cwiseMax(0.0f).cwiseMin(1.0f) /
-          lights.size();
-      buffer->r(i, buffer->r(i) + contribution.x());
-      buffer->g(i, buffer->g(i) + contribution.y());
-      buffer->b(i, buffer->b(i) + contribution.z());
-    }
+    result += light->isUse() ? light->illumination(hit, geometries)
+                             : Vector3f::Zero();
+
+  result = result.cwiseMax(0.0f).cwiseMin(1.0f);
+  Output::current->r(i, result.x());
+  Output::current->g(i, result.y());
+  Output::current->b(i, result.z());
 }
 
-void RayTracer::render(Scene *scene) {
-  int width = scene->getWidth();
-  int height = scene->getHeight();
-  Vector3f cameraPos = scene->getCenter();
-  Vector3f lookAt = scene->getLookAt();
-  float vpHeight = 2 * tan(scene->getFov() / 180 * M_PI / 2) * lookAt.norm();
+void RayTracer::render() {
+  int width = Scene::current->width();
+  int height = Scene::current->height();
+  Vector3f cameraPos = Scene::current->center();
+  Vector3f lookAt = Scene::current->lookAt();
+  float vpHeight =
+      2 * tan(Scene ::current->fov() / 180 * M_PI / 2) * lookAt.norm();
   float vpWidth = vpHeight * width / height;
   Vector3f vpU = Vector3f(vpWidth, 0, 0);
   Vector3f vpV = Vector3f(0, -vpHeight, 0);
@@ -57,8 +55,8 @@ void RayTracer::render(Scene *scene) {
   Vector3f vpUpperLeft = cameraPos + lookAt - vpU / 2.0 - vpV / 2.0;
   Vector3f pxUpperLeft = vpUpperLeft + (du + dv) / 2.0;
 
-  Output *buffer =
-      new Output(scene->getBackgroundColor(), scene->getName(), width, height);
+  Output::current = new Output(Scene::current->backgroundColor(),
+                               Scene::current->name(), width, height);
 
   for (int y = 0; y < height; ++y)
     for (int x = 0; x < width; ++x) {
@@ -73,11 +71,9 @@ void RayTracer::render(Scene *scene) {
       if (!records.empty()) {
         HitRecord hit = records.top();
         hit.calcNormal();
-        calculateColor(hit, buffer, y * width + x);
+        calculateColor(hit, y * width + x);
       }
     }
-
-  outputs.push_back(buffer);
 }
 
 void RayTracer::output() {
@@ -88,8 +84,9 @@ void RayTracer::output() {
 void RayTracer::run() {
   parse();
 
-  for (auto scene : scenes)
-    render(scene);
-
-  output();
+  for (auto scene : scenes) {
+    Scene::current = scene;
+    render();
+    Output::current->write();
+  }
 }

@@ -2,6 +2,8 @@
 
 #include <fstream>
 
+Output *Output::current = nullptr;
+
 void Output::write() {
   std::ofstream fout(path, std::ios_base::out | std::ios_base::binary);
   fout << "P6\n" << width << ' ' << height << '\n' << "255" << std::endl;

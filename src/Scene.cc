@@ -1,33 +1,37 @@
 #include "Scene.h"
 
-string Scene::getName() const { return name; }
+Scene *Scene::current = nullptr;
 
-int Scene::getWidth() { return width; }
+string Scene::name() const { return name_; }
 
-int Scene::getHeight() { return height; }
+int Scene::width() { return width_; }
 
-float Scene::getFov() { return fov; }
+int Scene::height() { return height_; }
 
-Vector3f Scene::getCenter() const { return center; }
+float Scene::fov() { return fov_; }
 
-Vector3f Scene::getUpVector() const { return up; }
+Vector3f Scene::ai() const { return ai_; }
 
-Vector3f Scene::getLookAt() const { return lookAt; }
+Vector3f Scene::center() const { return center_; }
 
-Vector3f Scene::getBackgroundColor() const { return backgroundColor; }
+Vector3f Scene::up() const { return up_; }
+
+Vector3f Scene::lookAt() const { return lookAt_; }
+
+Vector3f Scene::backgroundColor() const { return bgc_; }
 
 void Scene::setRaysPerPixel(const Eigen::VectorXi &raysPerPixel) {
-  this->raysPerPixel = raysPerPixel;
+  this->raysPerPixel_ = raysPerPixel;
 }
 
 void Scene::setAntialiasing(bool antialiasing) {
-  this->antialiasing = antialiasing;
+  this->antialiasing_ = antialiasing;
 }
 
 void Scene::setTwoSideRender(bool twoSideRender) {
-  this->twoSideRender = twoSideRender;
+  this->twoSideRender_ = twoSideRender;
 }
 
 void Scene::setGlobalIllum(bool globalIllum) {
-  this->globalIllum = globalIllum;
+  this->globalIllum_ = globalIllum;
 }
