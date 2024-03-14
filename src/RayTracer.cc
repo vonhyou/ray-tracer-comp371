@@ -6,6 +6,7 @@
 #include "Ray.h"
 
 #include <Eigen/Core>
+#include <Eigen/src/Core/Matrix.h>
 #include <cmath>
 #include <queue>
 
@@ -31,15 +32,15 @@ void RayTracer::calculateColor(const HitRecord &hit, Output *buffer, int i) {
   buffer->r(i, 0);
   buffer->g(i, 0);
   buffer->b(i, 0);
+  Vector3f result(0, 0, 0);
   for (auto light : lights)
-    if (light->isUse()) {
-      Vector3f contribution =
-          light->illumination(hit, geometries).cwiseMax(0.0f).cwiseMin(1.0f) /
-          lights.size();
-      buffer->r(i, buffer->r(i) + contribution.x());
-      buffer->g(i, buffer->g(i) + contribution.y());
-      buffer->b(i, buffer->b(i) + contribution.z());
-    }
+    if (light->isUse())
+      result += light->illumination(hit, geometries);
+
+  result = result.cwiseMax(0.0f).cwiseMin(1.0f);
+  buffer->r(i, buffer->r(i) + result.x());
+  buffer->g(i, buffer->g(i) + result.y());
+  buffer->b(i, buffer->b(i) + result.z());
 }
 
 void RayTracer::render(Scene *scene) {
