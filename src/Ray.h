@@ -7,15 +7,15 @@ using Eigen::Vector3f;
 
 class Ray {
 public:
-  Ray(const Vector3f &o, const Vector3f &d) : origin(o), direction(d) {}
+  Ray(const Vector3f &o, const Vector3f &d) : origin_(o), direction_(d) {}
 
 private:
-  Vector3f origin;
-  Vector3f direction;
+  Vector3f origin_;
+  Vector3f direction_;
 
 public:
-  Vector3f getOrigin() const;
-  Vector3f getDirection() const;
+  Vector3f origin() const;
+  Vector3f direction() const;
 };
 
 #endif // !RAY_H_

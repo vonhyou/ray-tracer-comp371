@@ -17,9 +17,9 @@ void Geometry::setTransform(const Matrix4f &transform) {
 }
 
 Optional<float> Sphere::intersect(const Ray &r) const {
-  Vector3f originCenter = r.getOrigin() - center;
-  float a = r.getDirection().dot(r.getDirection());
-  float b = 2.0f * originCenter.dot(r.getDirection());
+  Vector3f originCenter = r.origin() - center;
+  float a = r.direction().dot(r.direction());
+  float b = 2.0f * originCenter.dot(r.direction());
   float c = originCenter.dot(originCenter) - radius * radius;
 
   float delta = b * b - 4 * a * c;
@@ -52,15 +52,15 @@ bool isInRectangle(const Vector3f &p, const Vector3f &a, const Vector3f &b,
 }
 
 Optional<float> Rectangle::intersect(const Ray &r) const {
-  float denom = normal_.dot(r.getDirection());
+  float denom = normal_.dot(r.direction());
   if (abs(denom) < 1e-6f)
     return Optional<float>::nullopt;
 
-  float t = -normal_.dot(r.getOrigin() - p1) / denom;
+  float t = -normal_.dot(r.origin() - p1) / denom;
   if (t <= 0)
     return Optional<float>::nullopt;
 
-  Vector3f p = r.getOrigin() + t * r.getDirection();
+  Vector3f p = r.origin() + t * r.direction();
 
   return isInRectangle(p, p1, p2, p3, p4, normal_) ? Optional<float>(t)
                                                    : Optional<float>::nullopt;

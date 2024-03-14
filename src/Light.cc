@@ -20,7 +20,7 @@ bool Light::isUse() const { return use; }
 
 Vector3f PointLight::illumination(const HitRecord &hit,
                                   const vector<Geometry *> &geometries) const {
-  Vector3f shadingPoint = hit.getPoint();
+  Vector3f shadingPoint = hit.point();
   Vector3f rayDirection = (center - shadingPoint).normalized();
   Geometry *geometry = hit.geometry();
   Ray shadowRay(shadingPoint, rayDirection);

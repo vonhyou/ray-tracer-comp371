@@ -1,5 +1,5 @@
 #include "Ray.h"
 
-Vector3f Ray::getOrigin() const { return origin; }
+Vector3f Ray::origin() const { return origin_; }
 
-Vector3f Ray::getDirection() const { return direction; }
+Vector3f Ray::direction() const { return direction_; }
