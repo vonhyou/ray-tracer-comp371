@@ -6,6 +6,7 @@
 
 #include <Eigen/Core>
 #include <cmath>
+#include <iostream>
 #include <queue>
 
 using std::priority_queue;
@@ -57,22 +58,36 @@ void RayTracer::render() {
   Output::current = new Output(Scene::current->backgroundColor(),
                                Scene::current->name(), width, height);
 
-  for (int y = 0; y < height; ++y)
-    for (int x = 0; x < width; ++x) {
-      Ray ray = getRay(x, y, cameraPos, pxUpperLeft, du, dv);
-      priority_queue<HitRecord> records;
-      for (auto g : geometries) {
-        Optional<float> t = g->intersect(ray);
-        if (t.hasValue())
-          records.push(HitRecord(t.value(), ray, g));
-      }
+  int gridWidth = 1, gridHeight = 1, rpp = 1;
+  Eigen::VectorXi raysPerPixel = Scene::current->raysPerPixel();
 
-      if (!records.empty()) {
-        HitRecord hit = records.top();
-        hit.calcNormal();
-        calculateColor(hit, y * width + x);
-      }
-    }
+  if (raysPerPixel.size() == 2) {
+    gridWidth = gridHeight = raysPerPixel.x();
+    rpp = raysPerPixel.y();
+  } else if (raysPerPixel.size() == 3) {
+    gridWidth = raysPerPixel.x();
+    gridHeight = raysPerPixel.y();
+    rpp = raysPerPixel.z();
+  }
+
+  for (int y = 0; y < height; ++y)
+    for (int x = 0; x < width; ++x)
+      for (int j = 0; j < gridHeight; ++j)
+        for (int i = 0; i < gridWidth; ++i) {
+          Ray ray = getRay(x, y, cameraPos, pxUpperLeft, du, dv);
+          priority_queue<HitRecord> records;
+          for (auto g : geometries) {
+            Optional<float> t = g->intersect(ray);
+            if (t.hasValue())
+              records.push(HitRecord(t.value(), ray, g));
+          }
+
+          if (!records.empty()) {
+            HitRecord hit = records.top();
+            hit.calcNormal();
+            calculateColor(hit, y * width + x);
+          }
+        }
 }
 
 void RayTracer::run() {

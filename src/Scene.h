@@ -41,6 +41,7 @@ public:
   Vector3f up() const;
   Vector3f lookAt() const;
   Vector3f backgroundColor() const;
+  Eigen::VectorXi raysPerPixel() const;
   void setRaysPerPixel(const Eigen::VectorXi &);
   void setAntialiasing(bool);
   void setTwoSideRender(bool);

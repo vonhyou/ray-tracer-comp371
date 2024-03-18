@@ -10,6 +10,8 @@ int Scene::height() { return height_; }
 
 float Scene::fov() { return fov_; }
 
+Eigen::VectorXi Scene::raysPerPixel() const { return raysPerPixel_; }
+
 Vector3f Scene::ai() const { return ai_; }
 
 Vector3f Scene::center() const { return center_; }
