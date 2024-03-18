@@ -1,5 +1,4 @@
 #include "RayTracer.h"
-#include "../external/simpleppm.h"
 #include "HitRecord.h"
 #include "Output.h"
 #include "Parser.h"
@@ -74,11 +73,6 @@ void RayTracer::render() {
         calculateColor(hit, y * width + x);
       }
     }
-}
-
-void RayTracer::output() {
-  for (auto output : outputs)
-    output->write();
 }
 
 void RayTracer::run() {

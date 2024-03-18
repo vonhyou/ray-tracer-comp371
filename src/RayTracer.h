@@ -24,7 +24,6 @@ private:
   void parse();
   void calculateColor(const HitRecord &, int);
   void render();
-  void output();
 };
 
 #endif // !RAY_TRACER_H_
