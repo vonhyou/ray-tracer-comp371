@@ -23,9 +23,17 @@ void RayTracer::parse() {
     lights.push_back(Parser::getLight(*i));
 }
 
-Ray getRay(int x, int y, const Vector3f &camPos, const Vector3f &pxUpperLeft,
-           const Vector3f &du, const Vector3f &dv) {
-  return Ray(camPos, pxUpperLeft + x * du + y * dv - camPos);
+Ray getRay(int x, int y, const Vector3f &upperLeft, const Vector3f &du,
+           const Vector3f &dv) {
+  Vector3f camPos = Scene::current->center();
+  return Ray(camPos, upperLeft + x * du + y * dv - camPos);
+}
+
+Ray getRay(int x, int y, int i, int j, const Vector3f &upperLeft,
+           const Vector3f &du, const Vector3f &gdu, const Vector3f &dv,
+           const Vector3f &gdv) {
+  Vector3f camPos = Scene::current->center();
+  return Ray(camPos, upperLeft + x * du + i * gdu + y * dv + j * gdv - camPos);
 }
 
 void writeColor(int i, const Vector3f &color) {
@@ -43,17 +51,11 @@ Vector3f RayTracer::calculateColor(const HitRecord &hit, int i) const {
   return result.cwiseMax(0.0f).cwiseMin(1.0f);
 }
 
-int getGridWidth(Eigen::VectorXi data) {
-  return data.size() != 2 && data.size() != 3 ? 1 : data.x();
-}
+int getGridWidth(Eigen::VectorXi);
 
-int getGridHeight(Eigen::VectorXi data) {
-  return data.size() == 2 ? data.x() : (data.size() == 3 ? data.y() : 1);
-}
+int getGridHeight(Eigen::VectorXi);
 
-int getRayNumber(Eigen::VectorXi data) {
-  return data.size() == 2 ? data.y() : (data.size() == 3 ? data.z() : 1);
-}
+int getRayNumber(Eigen::VectorXi);
 
 Vector3f trace() { return Vector3f::Zero(); }
 
@@ -97,10 +99,11 @@ void RayTracer::render() {
       if (Scene::current->globalIllum()) {
         for (int j = 0; j < gridHeight; ++j)
           for (int i = 0; i < gridWidth; ++i) {
+            Ray ray = getRay(x, y, i, j, vpUpperLeft, du, gdu, dv, gdv);
             color = trace();
           }
       } else {
-        Ray ray = getRay(x, y, cameraPos, pxUpperLeft, du, dv);
+        Ray ray = getRay(x, y, pxUpperLeft, du, dv);
         priority_queue<HitRecord> records;
         for (auto g : geometries) {
           Optional<float> t = g->intersect(ray);
@@ -128,4 +131,18 @@ void RayTracer::run() {
     render();
     Output::current->write();
   }
+}
+
+// helper functions
+
+int getGridWidth(Eigen::VectorXi data) {
+  return data.size() != 2 && data.size() != 3 ? 1 : data.x();
+}
+
+int getGridHeight(Eigen::VectorXi data) {
+  return data.size() == 2 ? data.x() : (data.size() == 3 ? data.y() : 1);
+}
+
+int getRayNumber(Eigen::VectorXi data) {
+  return data.size() == 2 ? data.y() : (data.size() == 3 ? data.z() : 1);
 }
