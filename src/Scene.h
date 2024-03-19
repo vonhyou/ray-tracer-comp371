@@ -32,10 +32,13 @@ private:
   bool globalIllum_ = false;
 
 public:
+  static Scene *current;
+
   string name() const;
   int width();
   int height();
   float fov();
+  bool globalIllum();
   Vector3f ai() const;
   Vector3f center() const;
   Vector3f up() const;
@@ -46,7 +49,6 @@ public:
   void setAntialiasing(bool);
   void setTwoSideRender(bool);
   void setGlobalIllum(bool);
-  static Scene *current;
 };
 
 #endif // !SCENE_H_

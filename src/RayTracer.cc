@@ -40,6 +40,18 @@ void RayTracer::calculateColor(const HitRecord &hit, int i) {
   Output::current->b(i, result.z());
 }
 
+int getGridWidth(Eigen::VectorXi data) {
+  return data.size() != 2 && data.size() != 3 ? 1 : data.x();
+}
+
+int getGridHeight(Eigen::VectorXi data) {
+  return data.size() == 2 ? data.x() : (data.size() == 3 ? data.y() : 1);
+}
+
+int getRayNumber(Eigen::VectorXi data) {
+  return data.size() == 2 ? data.y() : (data.size() == 3 ? data.z() : 1);
+}
+
 void RayTracer::render() {
   int width = Scene::current->width();
   int height = Scene::current->height();
@@ -59,35 +71,40 @@ void RayTracer::render() {
   Output::current = new Output(Scene::current->backgroundColor(),
                                Scene::current->name(), width, height);
 
-  int gridWidth = 1, gridHeight = 1, rpp = 1;
-  Eigen::VectorXi raysPerPixel = Scene::current->raysPerPixel();
+  Eigen::VectorXi data = Scene::current->raysPerPixel();
+  int gridWidth = getGridWidth(data);
+  int gridHeight = getGridHeight(data);
+  int raysPerPixel = getRayNumber(data);
 
-  if (raysPerPixel.size() == 2) {
-    gridWidth = gridHeight = raysPerPixel.x();
-    rpp = raysPerPixel.y();
-  } else if (raysPerPixel.size() == 3) {
-    gridWidth = raysPerPixel.x();
-    gridHeight = raysPerPixel.y();
-    rpp = raysPerPixel.z();
+  Vector3f gdu = Vector3f::Zero();
+  Vector3f gdv = Vector3f::Zero();
+  if (gridWidth > 1 || gridHeight > 1) {
+    gdu = du / gridWidth;
+    gdv = dv / gridHeight;
   }
 
   for (int y = 0; y < height; ++y) {
     utils::Progress::of((y + 1.0f) / height);
+
     for (int x = 0; x < width; ++x)
       for (int j = 0; j < gridHeight; ++j)
         for (int i = 0; i < gridWidth; ++i) {
-          Ray ray = getRay(x, y, cameraPos, pxUpperLeft, du, dv);
-          priority_queue<HitRecord> records;
-          for (auto g : geometries) {
-            Optional<float> t = g->intersect(ray);
-            if (t.hasValue())
-              records.push(HitRecord(t.value(), ray, g));
-          }
+          if (Scene::current->globalIllum()) {
+            // TODO: Path tracing for global illumination
+          } else {
+            Ray ray = getRay(x, y, cameraPos, pxUpperLeft, du, dv);
+            priority_queue<HitRecord> records;
+            for (auto g : geometries) {
+              Optional<float> t = g->intersect(ray);
+              if (t.hasValue())
+                records.push(HitRecord(t.value(), ray, g));
+            }
 
-          if (!records.empty()) {
-            HitRecord hit = records.top();
-            hit.calcNormal();
-            calculateColor(hit, y * width + x);
+            if (!records.empty()) {
+              HitRecord hit = records.top();
+              hit.calcNormal();
+              calculateColor(hit, y * width + x);
+            }
           }
         }
   }
