@@ -28,16 +28,19 @@ Ray getRay(int x, int y, const Vector3f &camPos, const Vector3f &pxUpperLeft,
   return Ray(camPos, pxUpperLeft + x * du + y * dv - camPos);
 }
 
-void RayTracer::calculateColor(const HitRecord &hit, int i) {
+void writeColor(int i, const Vector3f &color) {
+  Output::current->r(i, color.x());
+  Output::current->g(i, color.y());
+  Output::current->b(i, color.z());
+}
+
+Vector3f RayTracer::calculateColor(const HitRecord &hit, int i) const {
   Vector3f result(0, 0, 0);
   for (auto light : lights)
     result += light->isUse() ? light->illumination(hit, geometries)
                              : Vector3f::Zero();
 
-  result = result.cwiseMax(0.0f).cwiseMin(1.0f);
-  Output::current->r(i, result.x());
-  Output::current->g(i, result.y());
-  Output::current->b(i, result.z());
+  return result.cwiseMax(0.0f).cwiseMin(1.0f);
 }
 
 int getGridWidth(Eigen::VectorXi data) {
@@ -51,6 +54,8 @@ int getGridHeight(Eigen::VectorXi data) {
 int getRayNumber(Eigen::VectorXi data) {
   return data.size() == 2 ? data.y() : (data.size() == 3 ? data.z() : 1);
 }
+
+Vector3f trace() { return Vector3f::Zero(); }
 
 void RayTracer::render() {
   int width = Scene::current->width();
@@ -68,8 +73,7 @@ void RayTracer::render() {
   Vector3f vpUpperLeft = cameraPos + lookAt - u / 2.0 - v / 2.0;
   Vector3f pxUpperLeft = vpUpperLeft + (du + dv) / 2.0;
 
-  Output::current = new Output(Scene::current->backgroundColor(),
-                               Scene::current->name(), width, height);
+  Output::current = new Output(Scene::current->name(), width, height);
 
   Eigen::VectorXi data = Scene::current->raysPerPixel();
   int gridWidth = getGridWidth(data);
@@ -84,31 +88,35 @@ void RayTracer::render() {
   }
 
   for (int y = 0; y < height; ++y) {
+    // print progress bar
     utils::Progress::of((y + 1.0f) / height);
 
-    for (int x = 0; x < width; ++x)
-      for (int j = 0; j < gridHeight; ++j)
-        for (int i = 0; i < gridWidth; ++i) {
-          if (Scene::current->globalIllum()) {
-            // TODO: Path tracing for global illumination
-          } else {
-            Ray ray = getRay(x, y, cameraPos, pxUpperLeft, du, dv);
-            priority_queue<HitRecord> records;
-            for (auto g : geometries) {
-              Optional<float> t = g->intersect(ray);
-              if (t.hasValue())
-                records.push(HitRecord(t.value(), ray, g));
-            }
+    for (int x = 0; x < width; ++x) {
+      Vector3f color = Scene::current->backgroundColor();
 
-            if (!records.empty()) {
-              HitRecord hit = records.top();
-              hit.calcNormal();
-              calculateColor(hit, y * width + x);
-            }
+      if (Scene::current->globalIllum()) {
+        for (int j = 0; j < gridHeight; ++j)
+          for (int i = 0; i < gridWidth; ++i) {
+            color = trace();
           }
+      } else {
+        Ray ray = getRay(x, y, cameraPos, pxUpperLeft, du, dv);
+        priority_queue<HitRecord> records;
+        for (auto g : geometries) {
+          Optional<float> t = g->intersect(ray);
+          if (t.hasValue())
+            records.push(HitRecord(t.value(), ray, g));
         }
-  }
 
+        if (!records.empty()) {
+          HitRecord hit = records.top();
+          hit.calcNormal();
+          color = calculateColor(hit, y * width + x);
+        }
+      }
+      writeColor(y * width + x, color);
+    }
+  }
   std::cout << std::endl;
 }
 
