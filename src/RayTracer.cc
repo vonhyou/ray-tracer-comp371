@@ -2,6 +2,7 @@
 #include "HitRecord.h"
 #include "Output.h"
 #include "Parser.h"
+#include "Progress.h"
 #include "Ray.h"
 
 #include <Eigen/Core>
@@ -70,7 +71,8 @@ void RayTracer::render() {
     rpp = raysPerPixel.z();
   }
 
-  for (int y = 0; y < height; ++y)
+  for (int y = 0; y < height; ++y) {
+    utils::Progress::of((y + 1.0f) / height);
     for (int x = 0; x < width; ++x)
       for (int j = 0; j < gridHeight; ++j)
         for (int i = 0; i < gridWidth; ++i) {
@@ -88,6 +90,9 @@ void RayTracer::render() {
             calculateColor(hit, y * width + x);
           }
         }
+  }
+
+  std::cout << std::endl;
 }
 
 void RayTracer::run() {
