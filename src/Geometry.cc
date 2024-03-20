@@ -53,7 +53,7 @@ bool isInRectangle(const Vector3f &p, const Vector3f &a, const Vector3f &b,
 
 Optional<float> Rectangle::intersect(const Ray &r) const {
   float denom = normal_.dot(r.direction());
-  if (abs(denom) < 1e-6f)
+  if (std::fabs(denom) < 1e-6f)
     return Optional<float>::nullopt;
 
   float t = -normal_.dot(r.origin() - p1) / denom;
