@@ -57,11 +57,10 @@ Vector3f AreaLight::illumination(const HitRecord &hit,
   Vector3f u = p4 - p1;
   Vector3f v = p2 - p1;
 
-  Vector3f color = Vector3f::Zero();
-
   if (useCenter) {
-    color += PointLight(*this, getCenter()).illumination(hit, geometries);
+    return PointLight(*this, getCenter()).illumination(hit, geometries);
   } else {
+    Vector3f color = Vector3f::Zero();
     for (int y = 0; y < gridSize; ++y)
       for (int x = 0; x < gridSize; ++x) {
         Vector3f contribution =
@@ -69,7 +68,6 @@ Vector3f AreaLight::illumination(const HitRecord &hit,
                 .illumination(hit, geometries);
         color += contribution;
       }
+    return color / gridSize / gridSize;
   }
-
-  return color / gridSize / gridSize;
 }
