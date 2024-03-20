@@ -3,6 +3,7 @@
 
 #include "../external/json.hpp"
 #include "Geometry.h"
+#include "HitRecord.h"
 #include "Light.h"
 #include "Output.h"
 #include "Scene.h"
@@ -22,8 +23,12 @@ private:
   std::vector<Output *> outputs;
 
   void parse();
-  Vector3f calculateColor(const HitRecord &, int) const;
   void render();
+  Optional<HitRecord> getHitRecord(Ray) const;
+  Vector3f calculateColor(const HitRecord &, int) const;
+  Light *singleLightSource() const;
+  Optional<Vector3f> trace(Ray) const;
+  Vector3f trace(HitRecord, int, float) const;
 };
 
 #endif // !RAY_TRACER_H_

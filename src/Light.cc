@@ -20,6 +20,8 @@ Vector3f Light::is() const { return is_; }
 
 bool Light::isUse() const { return use; }
 
+Vector3f PointLight::getCenter() const { return center; }
+
 Vector3f PointLight::illumination(const HitRecord &hit,
                                   const vector<Geometry *> &geometries) const {
   Vector3f shadingPoint = hit.point();
@@ -46,6 +48,10 @@ Vector3f PointLight::illumination(const HitRecord &hit,
   return specular_ + ambient_ + diffuse_;
 }
 
+Vector3f AreaLight::getCenter() const {
+  return p1 + (p4 - p1) / 2 + (p2 - p1) / 2;
+}
+
 Vector3f AreaLight::illumination(const HitRecord &hit,
                                  const vector<Geometry *> &geometries) const {
   Vector3f u = p4 - p1;
@@ -54,7 +60,7 @@ Vector3f AreaLight::illumination(const HitRecord &hit,
   Vector3f color = Vector3f::Zero();
 
   if (useCenter) {
-    color += PointLight(*this, p1 + (u + v) / 2).illumination(hit, geometries);
+    color += PointLight(*this, getCenter()).illumination(hit, geometries);
   } else {
     for (int y = 0; y < gridSize; ++y)
       for (int x = 0; x < gridSize; ++x) {

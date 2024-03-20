@@ -1,5 +1,6 @@
 #include "RayTracer.h"
 #include "HitRecord.h"
+#include "Light.h"
 #include "Output.h"
 #include "Parser.h"
 #include "Progress.h"
@@ -7,6 +8,7 @@
 #include "Ray.h"
 
 #include <Eigen/Core>
+#include <algorithm>
 #include <cmath>
 #include <iostream>
 #include <queue>
@@ -89,26 +91,22 @@ void RayTracer::render() {
         for (int j = 0; j < gridHeight; ++j)
           for (int i = 0; i < gridWidth; ++i) {
             Ray ray = getRay(x, y, i, j);
-            utils::Optional<Vector3f> result = trace(ray);
-            if (result.hasValue()) {
-              accumulate += result.value() * raysPerPixel;
-              success += raysPerPixel;
+            for (int rayNum = 0; rayNum < raysPerPixel; ++rayNum) {
+              utils::Optional<Vector3f> result = trace(ray);
+              if (result.hasValue()) {
+                accumulate += result.value();
+                success++;
+              }
             }
           }
         if (!success)
           color = accumulate / success;
       } else {
         Ray ray = getRay(x, y);
-        priority_queue<HitRecord> records;
-        for (auto g : geometries) {
-          Optional<float> t = g->intersect(ray);
-          if (t.hasValue())
-            records.push(HitRecord(t.value(), ray, g));
-        }
+        Optional<HitRecord> hitRecord = getHitRecord(ray);
 
-        if (!records.empty()) {
-          HitRecord hit = records.top();
-          hit.calcNormal();
+        if (hitRecord.hasValue()) {
+          HitRecord hit = hitRecord.value();
           color = calculateColor(hit, y * width + x);
         }
       }
@@ -128,6 +126,33 @@ Vector3f RayTracer::calculateColor(const HitRecord &hit, int i) const {
                              : Vector3f::Zero();
 
   return result;
+}
+
+/**
+ * Find the nearest geometry to intersect
+ */
+Optional<HitRecord> RayTracer::getHitRecord(Ray r) const {
+  priority_queue<HitRecord> records;
+  for (auto g : geometries) {
+    Optional<float> t = g->intersect(r);
+    if (t.hasValue())
+      records.push(HitRecord(t.value(), r, g));
+  }
+
+  if (!records.empty()) {
+    HitRecord result = records.top();
+    result.calcNormal();
+    return Optional<HitRecord>(result);
+  }
+
+  return Optional<HitRecord>::nullopt;
+}
+
+Light *RayTracer::singleLightSource() const {
+  for (auto light : lights)
+    if (light->isUse())
+      return light;
+  return nullptr;
 }
 
 // helper functions
@@ -151,21 +176,39 @@ void writeColor(int i, const Vector3f &color) {
   Output::current->b(i, color.z());
 }
 
-Vector3f trace(Ray r, int bounce, float prob) {
+Vector3f RayTracer::trace(HitRecord hit, int bounce, float prob) const {
   float dice = utils::Random::get();
   if (bounce && (dice > prob)) {
-    return Vector3f(1, 0, 1).array() * trace(r, bounce - 1, prob).array();
+    return Vector3f(1, 0, 1).array() * trace(hit, bounce - 1, prob).array();
+  } else {
+    Light *light = singleLightSource();
+    Vector3f point = hit.point();
+    Vector3f direction = (light->getCenter() - point).normalized();
+    Ray shadowRay(point, direction);
+
+    Geometry *geometry = hit.geometry();
+
+    for (auto g : geometries)
+      if (g != geometry && g->intersect(shadowRay).hasValue() &&
+          g->type() == Geometry::Type::SPHERE)
+        return Vector3f::Zero();
+
+    return geometry->cd().array() * light->id().array() *
+           std::max(0.0f, hit.normal().dot(direction));
   }
 
   return Vector3f(1, 1, 1);
 }
 
-utils::Optional<Vector3f> trace(Ray r) {
-  Vector3f color =
-      trace(r, Scene::current->maxBounce(), Scene::current->probTerminate());
+utils::Optional<Vector3f> RayTracer::trace(Ray r) const {
+  Optional<HitRecord> hitRecord = getHitRecord(r);
+  if (hitRecord.hasValue()) {
+    Vector3f color = trace(hitRecord.value(), Scene::current->maxBounce(),
+                           Scene::current->probTerminate());
 
-  if (color != Vector3f::Zero())
-    return utils::Optional<Vector3f>(color);
+    if (color != Vector3f::Zero())
+      return utils::Optional<Vector3f>(color);
+  }
 
   return utils::Optional<Vector3f>::nullopt;
 }
