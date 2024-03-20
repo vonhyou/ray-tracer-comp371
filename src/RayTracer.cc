@@ -17,7 +17,8 @@ using std::priority_queue;
 Ray getRay(int, int);
 Ray getRay(int, int, int, int);
 void writeColor(int, const Vector3f &);
-Vector3f trace();
+Vector3f trace(Ray r);
+Vector3f clamp(const Vector3f &);
 
 namespace camera {
 int width, height, gridWidth, gridHeight, raysPerPixel;
@@ -28,6 +29,8 @@ void init();
 
 /**
  * Student solution starts here
+ *
+ * The main.cpp provided by instructor will invoke this function
  */
 void RayTracer::run() {
   parse();
@@ -43,6 +46,11 @@ void RayTracer::run() {
   }
 }
 
+/**
+ * Parse the scene stored in the json file
+ *
+ * Example scene files are in `assets` folder
+ */
 void RayTracer::parse() {
   for (auto i = json["output"].begin(); i != json["output"].end(); ++i)
     scenes.push_back(Parser::getScene(*i));
@@ -54,6 +62,14 @@ void RayTracer::parse() {
     lights.push_back(Parser::getLight(*i));
 }
 
+/**
+ * Render the current scene
+ *
+ * For direction illumination and anti-aliasing, render by phong model
+ * for global illumination, use path-tracing method.
+ *
+ * (*) Global illumination will not work with anti-aliasing by the requirement
+ */
 void RayTracer::render() {
   camera::init();
 
@@ -67,11 +83,15 @@ void RayTracer::render() {
       Vector3f color = Scene::current->backgroundColor();
 
       if (Scene::current->globalIllum()) {
+        int success = 0;
+        Vector3f accumulate = Vector3f::Zero();
         for (int j = 0; j < gridHeight; ++j)
           for (int i = 0; i < gridWidth; ++i) {
             Ray ray = getRay(x, y, i, j);
-            color = trace();
+            accumulate += trace(ray);
           }
+        if (!success)
+          color = accumulate / success;
       } else {
         Ray ray = getRay(x, y);
         priority_queue<HitRecord> records;
@@ -87,19 +107,22 @@ void RayTracer::render() {
           color = calculateColor(hit, y * width + x);
         }
       }
-      writeColor(y * width + x, color);
+      writeColor(y * width + x, clamp(color));
     }
   }
   std::cout << std::endl;
 }
 
+/**
+ * Calculate color using phong model
+ */
 Vector3f RayTracer::calculateColor(const HitRecord &hit, int i) const {
   Vector3f result(0, 0, 0);
   for (auto light : lights)
     result += light->isUse() ? light->illumination(hit, geometries)
                              : Vector3f::Zero();
 
-  return result.cwiseMax(0.0f).cwiseMin(1.0f);
+  return result;
 }
 
 // helper functions
@@ -113,13 +136,17 @@ Ray getRay(int x, int y, int i, int j) {
   return Ray(pos, vpUpperLeft + x * du + i * gdu + y * dv + j * gdv - pos);
 }
 
+Vector3f clamp(const Vector3f &color) {
+  return color.cwiseMax(0.0f).cwiseMin(1.0f);
+}
+
 void writeColor(int i, const Vector3f &color) {
   Output::current->r(i, color.x());
   Output::current->g(i, color.y());
   Output::current->b(i, color.z());
 }
 
-Vector3f trace() { return Vector3f::Zero(); }
+Vector3f trace(Ray r) { return Vector3f::Zero(); }
 
 namespace camera {
 int getGridWidth(VectorXi data) {
