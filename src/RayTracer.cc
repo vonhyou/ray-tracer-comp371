@@ -10,7 +10,28 @@
 #include <iostream>
 #include <queue>
 
+using Eigen::VectorXi;
 using std::priority_queue;
+
+// help function declarations
+int getGridWidth(VectorXi);
+int getGridHeight(VectorXi);
+int getRayNumber(VectorXi);
+Ray getRay(int, int, const Vector3f &, const Vector3f &, const Vector3f &);
+Ray getRay(int, int, int, int, const Vector3f &, const Vector3f &,
+           const Vector3f &, const Vector3f &, const Vector3f &);
+void writeColor(int, const Vector3f &);
+Vector3f trace();
+
+void RayTracer::run() {
+  parse();
+
+  for (auto scene : scenes) {
+    Scene::current = scene;
+    render();
+    Output::current->write();
+  }
+}
 
 void RayTracer::parse() {
   for (auto i = json["output"].begin(); i != json["output"].end(); ++i)
@@ -22,42 +43,6 @@ void RayTracer::parse() {
   for (auto i = json["light"].begin(); i != json["light"].end(); ++i)
     lights.push_back(Parser::getLight(*i));
 }
-
-Ray getRay(int x, int y, const Vector3f &upperLeft, const Vector3f &du,
-           const Vector3f &dv) {
-  Vector3f camPos = Scene::current->center();
-  return Ray(camPos, upperLeft + x * du + y * dv - camPos);
-}
-
-Ray getRay(int x, int y, int i, int j, const Vector3f &upperLeft,
-           const Vector3f &du, const Vector3f &gdu, const Vector3f &dv,
-           const Vector3f &gdv) {
-  Vector3f camPos = Scene::current->center();
-  return Ray(camPos, upperLeft + x * du + i * gdu + y * dv + j * gdv - camPos);
-}
-
-void writeColor(int i, const Vector3f &color) {
-  Output::current->r(i, color.x());
-  Output::current->g(i, color.y());
-  Output::current->b(i, color.z());
-}
-
-Vector3f RayTracer::calculateColor(const HitRecord &hit, int i) const {
-  Vector3f result(0, 0, 0);
-  for (auto light : lights)
-    result += light->isUse() ? light->illumination(hit, geometries)
-                             : Vector3f::Zero();
-
-  return result.cwiseMax(0.0f).cwiseMin(1.0f);
-}
-
-int getGridWidth(Eigen::VectorXi);
-
-int getGridHeight(Eigen::VectorXi);
-
-int getRayNumber(Eigen::VectorXi);
-
-Vector3f trace() { return Vector3f::Zero(); }
 
 void RayTracer::render() {
   int width = Scene::current->width();
@@ -77,7 +62,7 @@ void RayTracer::render() {
 
   Output::current = new Output(Scene::current->name(), width, height);
 
-  Eigen::VectorXi data = Scene::current->raysPerPixel();
+  VectorXi data = Scene::current->raysPerPixel();
   int gridWidth = getGridWidth(data);
   int gridHeight = getGridHeight(data);
   int raysPerPixel = getRayNumber(data);
@@ -123,26 +108,45 @@ void RayTracer::render() {
   std::cout << std::endl;
 }
 
-void RayTracer::run() {
-  parse();
+Vector3f RayTracer::calculateColor(const HitRecord &hit, int i) const {
+  Vector3f result(0, 0, 0);
+  for (auto light : lights)
+    result += light->isUse() ? light->illumination(hit, geometries)
+                             : Vector3f::Zero();
 
-  for (auto scene : scenes) {
-    Scene::current = scene;
-    render();
-    Output::current->write();
-  }
+  return result.cwiseMax(0.0f).cwiseMin(1.0f);
 }
 
 // helper functions
-
-int getGridWidth(Eigen::VectorXi data) {
+int getGridWidth(VectorXi data) {
   return data.size() != 2 && data.size() != 3 ? 1 : data.x();
 }
 
-int getGridHeight(Eigen::VectorXi data) {
+int getGridHeight(VectorXi data) {
   return data.size() == 2 ? data.x() : (data.size() == 3 ? data.y() : 1);
 }
 
-int getRayNumber(Eigen::VectorXi data) {
+int getRayNumber(VectorXi data) {
   return data.size() == 2 ? data.y() : (data.size() == 3 ? data.z() : 1);
 }
+
+Ray getRay(int x, int y, const Vector3f &upperLeft, const Vector3f &du,
+           const Vector3f &dv) {
+  Vector3f camPos = Scene::current->center();
+  return Ray(camPos, upperLeft + x * du + y * dv - camPos);
+}
+
+Ray getRay(int x, int y, int i, int j, const Vector3f &upperLeft,
+           const Vector3f &du, const Vector3f &gdu, const Vector3f &dv,
+           const Vector3f &gdv) {
+  Vector3f camPos = Scene::current->center();
+  return Ray(camPos, upperLeft + x * du + i * gdu + y * dv + j * gdv - camPos);
+}
+
+void writeColor(int i, const Vector3f &color) {
+  Output::current->r(i, color.x());
+  Output::current->g(i, color.y());
+  Output::current->b(i, color.z());
+}
+
+Vector3f trace() { return Vector3f::Zero(); }
