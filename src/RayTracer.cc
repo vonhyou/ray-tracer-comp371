@@ -99,7 +99,8 @@ void RayTracer::render() {
               }
             }
           }
-        if (!success)
+
+        if (success)
           color = accumulate / success;
       } else {
         Ray ray = getRay(x, y);
@@ -176,28 +177,48 @@ void writeColor(int i, const Vector3f &color) {
   Output::current->b(i, color.z());
 }
 
+Vector3f getRandomDirection() {
+RETRY_RANDOM:
+  float x = utils::Random::get();
+  float y = utils::Random::get();
+  if (x * x + y * y > 1)
+    goto RETRY_RANDOM;
+
+  return Vector3f(x, y, std::sqrt(1 - x * x - y * y));
+}
+
 Vector3f RayTracer::trace(HitRecord hit, int bounce, float prob) const {
-  float dice = utils::Random::get();
-  if (bounce && (dice > prob)) {
-    return Vector3f(1, 0, 1).array() * trace(hit, bounce - 1, prob).array();
+  bool notFinish = bounce && (utils::Random::get() > prob);
+  Vector3f point = hit.point();
+  Light *light = singleLightSource();
+  Vector3f direction;
+  Geometry *geometry = hit.geometry();
+
+  if (notFinish) {
+    direction = point + getRandomDirection();
   } else {
-    Light *light = singleLightSource();
-    Vector3f point = hit.point();
-    Vector3f direction = (light->getCenter() - point).normalized();
-    Ray shadowRay(point, direction);
+    direction = light->getCenter() - point;
+  }
+  direction.normalize();
+  Ray ray(point, direction);
 
-    Geometry *geometry = hit.geometry();
-
+  if (notFinish) {
+    Optional<HitRecord> hitRecord = getHitRecord(ray);
+    if (hitRecord.hasValue()) {
+      Vector3f traceColor = trace(hitRecord.value(), bounce - 1, prob);
+      return traceColor.array() * geometry->cd().array() *
+             std::max(0.0f, hit.normal().dot(direction));
+    }
+    return Vector3f::Zero();
+  } else {
     for (auto g : geometries)
-      if (g != geometry && g->intersect(shadowRay).hasValue() &&
+      if (g != geometry && g->intersect(ray).hasValue() &&
           g->type() == Geometry::Type::SPHERE)
         return Vector3f::Zero();
 
     return geometry->cd().array() * light->id().array() *
            std::max(0.0f, hit.normal().dot(direction));
   }
-
-  return Vector3f(1, 1, 1);
 }
 
 utils::Optional<Vector3f> RayTracer::trace(Ray r) const {
