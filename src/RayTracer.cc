@@ -14,9 +14,6 @@ using Eigen::VectorXi;
 using std::priority_queue;
 
 // help function declarations
-int getGridWidth(VectorXi);
-int getGridHeight(VectorXi);
-int getRayNumber(VectorXi);
 Ray getRay(int, int);
 Ray getRay(int, int, int, int);
 void writeColor(int, const Vector3f &);
@@ -29,12 +26,19 @@ Vector3f pos, u, v, du, dv, vpUpperLeft, pxUpperLeft, gdu, gdv;
 void init();
 } // namespace camera
 
+/**
+ * Student solution starts here
+ */
 void RayTracer::run() {
   parse();
 
   for (auto scene : scenes) {
+    if (Scene::current != nullptr)
+      delete Scene::current;
+
     Scene::current = scene;
     render();
+
     Output::current->write();
   }
 }
@@ -53,19 +57,18 @@ void RayTracer::parse() {
 void RayTracer::render() {
   camera::init();
 
-  Output::current =
-      new Output(Scene::current->name(), camera::width, camera::height);
+  using namespace camera;
+  Output::current = new Output(Scene::current->name(), width, height);
 
-  for (int y = 0; y < camera::height; ++y) {
-    // print progress bar
-    utils::Progress::of((y + 1.0f) / camera::height);
+  for (int y = 0; y < height; ++y) {
+    utils::Progress::of((y + 1.0f) / height);
 
-    for (int x = 0; x < camera::width; ++x) {
+    for (int x = 0; x < width; ++x) {
       Vector3f color = Scene::current->backgroundColor();
 
       if (Scene::current->globalIllum()) {
-        for (int j = 0; j < camera::gridHeight; ++j)
-          for (int i = 0; i < camera::gridWidth; ++i) {
+        for (int j = 0; j < gridHeight; ++j)
+          for (int i = 0; i < gridWidth; ++i) {
             Ray ray = getRay(x, y, i, j);
             color = trace();
           }
@@ -81,10 +84,10 @@ void RayTracer::render() {
         if (!records.empty()) {
           HitRecord hit = records.top();
           hit.calcNormal();
-          color = calculateColor(hit, y * camera::width + x);
+          color = calculateColor(hit, y * width + x);
         }
       }
-      writeColor(y * camera::width + x, color);
+      writeColor(y * width + x, color);
     }
   }
   std::cout << std::endl;
@@ -100,18 +103,6 @@ Vector3f RayTracer::calculateColor(const HitRecord &hit, int i) const {
 }
 
 // helper functions
-int getGridWidth(VectorXi data) {
-  return data.size() != 2 && data.size() != 3 ? 1 : data.x();
-}
-
-int getGridHeight(VectorXi data) {
-  return data.size() == 2 ? data.x() : (data.size() == 3 ? data.y() : 1);
-}
-
-int getRayNumber(VectorXi data) {
-  return data.size() == 2 ? data.y() : (data.size() == 3 ? data.z() : 1);
-}
-
 Ray getRay(int x, int y) {
   using namespace camera;
   return Ray(pos, pxUpperLeft + x * du + y * dv - pos);
@@ -131,6 +122,18 @@ void writeColor(int i, const Vector3f &color) {
 Vector3f trace() { return Vector3f::Zero(); }
 
 namespace camera {
+int getGridWidth(VectorXi data) {
+  return data.size() != 2 && data.size() != 3 ? 1 : data.x();
+}
+
+int getGridHeight(VectorXi data) {
+  return data.size() == 2 ? data.x() : (data.size() == 3 ? data.y() : 1);
+}
+
+int getRayNumber(VectorXi data) {
+  return data.size() == 2 ? data.y() : (data.size() == 3 ? data.z() : 1);
+}
+
 void init() {
   width = Scene::current->width();
   height = Scene::current->height();
