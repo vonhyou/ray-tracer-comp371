@@ -17,15 +17,14 @@ using std::priority_queue;
 int getGridWidth(VectorXi);
 int getGridHeight(VectorXi);
 int getRayNumber(VectorXi);
-Ray getRay(int, int, const Vector3f &, const Vector3f &, const Vector3f &);
-Ray getRay(int, int, int, int, const Vector3f &, const Vector3f &,
-           const Vector3f &, const Vector3f &, const Vector3f &);
+Ray getRay(int, int);
+Ray getRay(int, int, int, int);
 void writeColor(int, const Vector3f &);
 Vector3f trace();
 
 namespace camera {
-int width, height;
-Vector3f position, u, v, du, dv, vpUpperLeft, pxUpperLeft;
+int width, height, gridWidth, gridHeight, raysPerPixel;
+Vector3f pos, u, v, du, dv, vpUpperLeft, pxUpperLeft, gdu, gdv;
 
 void init();
 } // namespace camera
@@ -57,18 +56,6 @@ void RayTracer::render() {
   Output::current =
       new Output(Scene::current->name(), camera::width, camera::height);
 
-  VectorXi data = Scene::current->raysPerPixel();
-  int gridWidth = getGridWidth(data);
-  int gridHeight = getGridHeight(data);
-  int raysPerPixel = getRayNumber(data);
-
-  Vector3f gdu = Vector3f::Zero();
-  Vector3f gdv = Vector3f::Zero();
-  if (gridWidth > 1 || gridHeight > 1) {
-    gdu = camera::du / gridWidth;
-    gdv = camera::dv / gridHeight;
-  }
-
   for (int y = 0; y < camera::height; ++y) {
     // print progress bar
     utils::Progress::of((y + 1.0f) / camera::height);
@@ -77,14 +64,13 @@ void RayTracer::render() {
       Vector3f color = Scene::current->backgroundColor();
 
       if (Scene::current->globalIllum()) {
-        for (int j = 0; j < gridHeight; ++j)
-          for (int i = 0; i < gridWidth; ++i) {
-            Ray ray = getRay(x, y, i, j, camera::vpUpperLeft, camera::du, gdu,
-                             camera::dv, gdv);
+        for (int j = 0; j < camera::gridHeight; ++j)
+          for (int i = 0; i < camera::gridWidth; ++i) {
+            Ray ray = getRay(x, y, i, j);
             color = trace();
           }
       } else {
-        Ray ray = getRay(x, y, camera::pxUpperLeft, camera::du, camera::dv);
+        Ray ray = getRay(x, y);
         priority_queue<HitRecord> records;
         for (auto g : geometries) {
           Optional<float> t = g->intersect(ray);
@@ -126,16 +112,14 @@ int getRayNumber(VectorXi data) {
   return data.size() == 2 ? data.y() : (data.size() == 3 ? data.z() : 1);
 }
 
-Ray getRay(int x, int y, const Vector3f &upperLeft, const Vector3f &du,
-           const Vector3f &dv) {
-  return Ray(camera::position, upperLeft + x * du + y * dv - camera::position);
+Ray getRay(int x, int y) {
+  using namespace camera;
+  return Ray(pos, pxUpperLeft + x * du + y * dv - pos);
 }
 
-Ray getRay(int x, int y, int i, int j, const Vector3f &upperLeft,
-           const Vector3f &du, const Vector3f &gdu, const Vector3f &dv,
-           const Vector3f &gdv) {
-  Vector3f camPos = Scene::current->center();
-  return Ray(camPos, upperLeft + x * du + i * gdu + y * dv + j * gdv - camPos);
+Ray getRay(int x, int y, int i, int j) {
+  using namespace camera;
+  return Ray(pos, vpUpperLeft + x * du + i * gdu + y * dv + j * gdv - pos);
 }
 
 void writeColor(int i, const Vector3f &color) {
@@ -150,16 +134,28 @@ namespace camera {
 void init() {
   width = Scene::current->width();
   height = Scene::current->height();
-  position = Scene::current->center();
+  pos = Scene::current->center();
   Vector3f lookAt = Scene::current->lookAt();
   float vpHeight =
       2 * tan(Scene::current->fov() / 180 * M_PI / 2) * lookAt.norm();
-  float vpWidth = vpHeight * camera::width / camera::height;
+  float vpWidth = vpHeight * width / height;
   u = Vector3f(vpWidth, 0, 0);
   v = Vector3f(0, -vpHeight, 0);
-  du = u / camera::width;
-  dv = v / camera::height;
-  vpUpperLeft = camera::position + lookAt - u / 2.0 - v / 2.0;
+  du = u / width;
+  dv = v / height;
+  vpUpperLeft = pos + lookAt - u / 2.0 - v / 2.0;
   pxUpperLeft = vpUpperLeft + (du + dv) / 2.0;
+
+  VectorXi data = Scene::current->raysPerPixel();
+  gridWidth = getGridWidth(data);
+  gridHeight = getGridHeight(data);
+  raysPerPixel = getRayNumber(data);
+
+  gdu = Vector3f::Zero();
+  gdv = Vector3f::Zero();
+  if (gridWidth > 1 || gridHeight > 1) {
+    gdu = du / gridWidth;
+    gdv = dv / gridHeight;
+  }
 }
 } // namespace camera
