@@ -3,6 +3,7 @@
 #include "Output.h"
 #include "Parser.h"
 #include "Progress.h"
+#include "Random.h"
 #include "Ray.h"
 
 #include <Eigen/Core>
@@ -150,11 +151,22 @@ void writeColor(int i, const Vector3f &color) {
   Output::current->b(i, color.z());
 }
 
-Vector3f trace(Ray r, int bounce, float prob) {}
+Vector3f trace(Ray r, int bounce, float prob) {
+  float dice = utils::Random::get();
+  if (bounce && (dice > prob)) {
+    return Vector3f(1, 0, 1).array() * trace(r, bounce - 1, prob).array();
+  }
+
+  return Vector3f(1, 1, 1);
+}
 
 utils::Optional<Vector3f> trace(Ray r) {
   Vector3f color =
       trace(r, Scene::current->maxBounce(), Scene::current->probTerminate());
+
+  if (color != Vector3f::Zero())
+    return utils::Optional<Vector3f>(color);
+
   return utils::Optional<Vector3f>::nullopt;
 }
 
