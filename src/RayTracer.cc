@@ -5,12 +5,12 @@
 #include "Output.h"
 #include "Parser.h"
 #include "Progress.h"
-#include "Random.h"
 #include "Ray.h"
 
 #include <Eigen/Core>
 #include <algorithm>
 #include <cmath>
+#include <cstdlib>
 #include <iostream>
 #include <queue>
 
@@ -91,6 +91,9 @@ void RayTracer::render() {
         Vector3f accumulate = Vector3f::Zero();
         for (int j = 0; j < gridHeight; ++j)
           for (int i = 0; i < gridWidth; ++i) {
+
+            if (x != width / 2 || y != height / 2 || i || j)
+              ; // goto DEBUG_COLOR;
             Ray ray = getRay(x, y, i, j);
             for (int rayNum = 0; rayNum < raysPerPixel; ++rayNum) {
               utils::Optional<Vector3f> result = trace(ray);
@@ -112,6 +115,7 @@ void RayTracer::render() {
           color = calculateColor(hit, y * width + x);
         }
       }
+    DEBUG_COLOR:
       writeColor(y * width + x, clamp(color));
     }
   }
@@ -134,12 +138,13 @@ Vector3f RayTracer::calculateColor(const HitRecord &hit, int i) const {
  * Find the nearest geometry to intersect
  */
 Optional<HitRecord> RayTracer::getHitRecord(Ray r, const Geometry *self,
-                                            bool notSphere) const {
+                                            bool notRectangle) const {
   priority_queue<HitRecord> records;
   for (auto g : geometries) {
     Optional<float> t = g->intersect(r);
     if (t.hasValue() && g != self)
-      if (!notSphere || notSphere && g->type() != Geometry::Type::SPHERE)
+      if (!notRectangle ||
+          notRectangle && g->type() != Geometry::Type::RECTANGLE)
         records.push(HitRecord(t.value(), r, g));
   }
 
@@ -190,8 +195,8 @@ void writeColor(int i, const Vector3f &color) {
 
 Vector3f getRandomDirection() {
 RETRY_RANDOM:
-  float x = utils::Random::get();
-  float y = utils::Random::get();
+  float x = (float)rand() / RAND_MAX;
+  float y = (float)rand() / RAND_MAX;
   if (x * x + y * y > 1)
     goto RETRY_RANDOM;
 
@@ -199,25 +204,25 @@ RETRY_RANDOM:
 }
 
 Vector3f RayTracer::trace(HitRecord hit, int bounce, float prob) const {
-  bool notFinish = bounce && (utils::Random::get() > prob);
+  bool finish = !bounce || ((float)rand() / RAND_MAX < prob);
   Vector3f point = hit.point();
   Light *light = singleLightSource();
   Vector3f direction;
   Geometry *geometry = hit.geometry();
 
-  if (notFinish)
-    direction = point + getRandomDirection();
-  else
+  if (finish)
     direction = light->getCenter() - point;
+  else
+    direction = point + getRandomDirection();
 
   direction.normalize();
   Ray ray(point, direction);
 
-  Optional<HitRecord> hitRecord = getHitRecord(ray, geometry, !notFinish);
+  Optional<HitRecord> hitRecord = getHitRecord(ray, geometry, finish);
   Vector3f traceColor = Vector3f::Zero();
-  if (notFinish && hitRecord.hasValue())
+  if (!finish && hitRecord.hasValue())
     traceColor = trace(hitRecord.value(), bounce - 1, prob);
-  else if (!notFinish)
+  else if (finish && !hitRecord.hasValue())
     traceColor = light->id();
 
   return traceColor.array() * geometry->cd().array() *
