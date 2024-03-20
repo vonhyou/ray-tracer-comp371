@@ -1,6 +1,7 @@
 #include "RayTracer.h"
 #include "HitRecord.h"
 #include "Light.h"
+#include "Optional.h"
 #include "Output.h"
 #include "Parser.h"
 #include "Progress.h"
@@ -132,12 +133,14 @@ Vector3f RayTracer::calculateColor(const HitRecord &hit, int i) const {
 /**
  * Find the nearest geometry to intersect
  */
-Optional<HitRecord> RayTracer::getHitRecord(Ray r) const {
+Optional<HitRecord> RayTracer::getHitRecord(Ray r, const Geometry *self,
+                                            bool notSphere) const {
   priority_queue<HitRecord> records;
   for (auto g : geometries) {
     Optional<float> t = g->intersect(r);
-    if (t.hasValue())
-      records.push(HitRecord(t.value(), r, g));
+    if (t.hasValue() && g != self)
+      if (!notSphere || notSphere && g->type() != Geometry::Type::SPHERE)
+        records.push(HitRecord(t.value(), r, g));
   }
 
   if (!records.empty()) {
@@ -147,6 +150,14 @@ Optional<HitRecord> RayTracer::getHitRecord(Ray r) const {
   }
 
   return Optional<HitRecord>::nullopt;
+}
+
+Optional<HitRecord> RayTracer::getHitRecord(Ray r, const Geometry *g) const {
+  return getHitRecord(r, g, false);
+}
+
+Optional<HitRecord> RayTracer::getHitRecord(Ray r) const {
+  return getHitRecord(r, nullptr, false);
 }
 
 Light *RayTracer::singleLightSource() const {
@@ -194,31 +205,23 @@ Vector3f RayTracer::trace(HitRecord hit, int bounce, float prob) const {
   Vector3f direction;
   Geometry *geometry = hit.geometry();
 
-  if (notFinish) {
+  if (notFinish)
     direction = point + getRandomDirection();
-  } else {
+  else
     direction = light->getCenter() - point;
-  }
+
   direction.normalize();
   Ray ray(point, direction);
 
-  if (notFinish) {
-    Optional<HitRecord> hitRecord = getHitRecord(ray);
-    if (hitRecord.hasValue()) {
-      Vector3f traceColor = trace(hitRecord.value(), bounce - 1, prob);
-      return traceColor.array() * geometry->cd().array() *
-             std::max(0.0f, hit.normal().dot(direction));
-    }
-    return Vector3f::Zero();
-  } else {
-    for (auto g : geometries)
-      if (g != geometry && g->intersect(ray).hasValue() &&
-          g->type() == Geometry::Type::SPHERE)
-        return Vector3f::Zero();
+  Optional<HitRecord> hitRecord = getHitRecord(ray, geometry, !notFinish);
+  Vector3f traceColor = Vector3f::Zero();
+  if (notFinish && hitRecord.hasValue())
+    traceColor = trace(hitRecord.value(), bounce - 1, prob);
+  else if (!notFinish)
+    traceColor = light->id();
 
-    return geometry->cd().array() * light->id().array() *
-           std::max(0.0f, hit.normal().dot(direction));
-  }
+  return traceColor.array() * geometry->cd().array() *
+         std::max(0.0f, hit.normal().dot(direction));
 }
 
 utils::Optional<Vector3f> RayTracer::trace(Ray r) const {
