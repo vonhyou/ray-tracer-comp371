@@ -25,6 +25,7 @@ Vector3f trace();
 
 namespace camera {
 int width, height;
+Vector3f position, u, v, du, dv, vpUpperLeft, pxUpperLeft;
 
 void init();
 } // namespace camera
@@ -52,18 +53,6 @@ void RayTracer::parse() {
 
 void RayTracer::render() {
   camera::init();
-  Vector3f cameraPos = Scene::current->center();
-  Vector3f lookAt = Scene::current->lookAt();
-  float vpHeight =
-      2 * tan(Scene::current->fov() / 180 * M_PI / 2) * lookAt.norm();
-  float vpWidth = vpHeight * camera::width / camera::height;
-  Vector3f u = Vector3f(vpWidth, 0, 0);
-  Vector3f v = Vector3f(0, -vpHeight, 0);
-  Vector3f du = u / camera::width;
-  Vector3f dv = v / camera::height;
-
-  Vector3f vpUpperLeft = cameraPos + lookAt - u / 2.0 - v / 2.0;
-  Vector3f pxUpperLeft = vpUpperLeft + (du + dv) / 2.0;
 
   Output::current =
       new Output(Scene::current->name(), camera::width, camera::height);
@@ -76,8 +65,8 @@ void RayTracer::render() {
   Vector3f gdu = Vector3f::Zero();
   Vector3f gdv = Vector3f::Zero();
   if (gridWidth > 1 || gridHeight > 1) {
-    gdu = du / gridWidth;
-    gdv = dv / gridHeight;
+    gdu = camera::du / gridWidth;
+    gdv = camera::dv / gridHeight;
   }
 
   for (int y = 0; y < camera::height; ++y) {
@@ -90,11 +79,12 @@ void RayTracer::render() {
       if (Scene::current->globalIllum()) {
         for (int j = 0; j < gridHeight; ++j)
           for (int i = 0; i < gridWidth; ++i) {
-            Ray ray = getRay(x, y, i, j, vpUpperLeft, du, gdu, dv, gdv);
+            Ray ray = getRay(x, y, i, j, camera::vpUpperLeft, camera::du, gdu,
+                             camera::dv, gdv);
             color = trace();
           }
       } else {
-        Ray ray = getRay(x, y, pxUpperLeft, du, dv);
+        Ray ray = getRay(x, y, camera::pxUpperLeft, camera::du, camera::dv);
         priority_queue<HitRecord> records;
         for (auto g : geometries) {
           Optional<float> t = g->intersect(ray);
@@ -138,8 +128,7 @@ int getRayNumber(VectorXi data) {
 
 Ray getRay(int x, int y, const Vector3f &upperLeft, const Vector3f &du,
            const Vector3f &dv) {
-  Vector3f camPos = Scene::current->center();
-  return Ray(camPos, upperLeft + x * du + y * dv - camPos);
+  return Ray(camera::position, upperLeft + x * du + y * dv - camera::position);
 }
 
 Ray getRay(int x, int y, int i, int j, const Vector3f &upperLeft,
@@ -161,5 +150,16 @@ namespace camera {
 void init() {
   width = Scene::current->width();
   height = Scene::current->height();
+  position = Scene::current->center();
+  Vector3f lookAt = Scene::current->lookAt();
+  float vpHeight =
+      2 * tan(Scene::current->fov() / 180 * M_PI / 2) * lookAt.norm();
+  float vpWidth = vpHeight * camera::width / camera::height;
+  u = Vector3f(vpWidth, 0, 0);
+  v = Vector3f(0, -vpHeight, 0);
+  du = u / camera::width;
+  dv = v / camera::height;
+  vpUpperLeft = camera::position + lookAt - u / 2.0 - v / 2.0;
+  pxUpperLeft = vpUpperLeft + (du + dv) / 2.0;
 }
 } // namespace camera
