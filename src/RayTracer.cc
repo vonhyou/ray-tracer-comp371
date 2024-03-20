@@ -17,7 +17,7 @@ using std::priority_queue;
 Ray getRay(int, int);
 Ray getRay(int, int, int, int);
 void writeColor(int, const Vector3f &);
-Vector3f trace(Ray r);
+utils::Optional<Vector3f> trace(Ray r);
 Vector3f clamp(const Vector3f &);
 
 namespace camera {
@@ -88,7 +88,11 @@ void RayTracer::render() {
         for (int j = 0; j < gridHeight; ++j)
           for (int i = 0; i < gridWidth; ++i) {
             Ray ray = getRay(x, y, i, j);
-            accumulate += trace(ray);
+            utils::Optional<Vector3f> result = trace(ray);
+            if (result.hasValue()) {
+              accumulate += result.value() * raysPerPixel;
+              success += raysPerPixel;
+            }
           }
         if (!success)
           color = accumulate / success;
@@ -146,7 +150,13 @@ void writeColor(int i, const Vector3f &color) {
   Output::current->b(i, color.z());
 }
 
-Vector3f trace(Ray r) { return Vector3f::Zero(); }
+Vector3f trace(Ray r, int bounce, float prob) {}
+
+utils::Optional<Vector3f> trace(Ray r) {
+  Vector3f color =
+      trace(r, Scene::current->maxBounce(), Scene::current->probTerminate());
+  return utils::Optional<Vector3f>::nullopt;
+}
 
 namespace camera {
 int getGridWidth(VectorXi data) {

@@ -30,6 +30,8 @@ private:
   bool antialiasing_ = false;
   bool twoSideRender_ = false;
   bool globalIllum_ = false;
+  int maxBounce_ = 3;
+  float probTerminate_ = 0.33;
 
 public:
   static Scene *current;
@@ -39,6 +41,8 @@ public:
   int height();
   float fov();
   bool globalIllum();
+  int maxBounce();
+  float probTerminate();
   Vector3f ai() const;
   Vector3f center() const;
   Vector3f up() const;
@@ -49,6 +53,8 @@ public:
   void setAntialiasing(bool);
   void setTwoSideRender(bool);
   void setGlobalIllum(bool);
+  void setMaxBounce(int);
+  void setProbTerminate(float);
 };
 
 #endif // !SCENE_H_
