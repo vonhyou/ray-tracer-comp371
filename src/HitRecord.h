@@ -9,6 +9,8 @@ using Eigen::Vector3f;
 
 class HitRecord {
 public:
+  HitRecord()
+      : t(0), ray_(Ray()), normal_(Vector3f::Zero()), geometry_(nullptr) {}
   HitRecord(float t, const Ray &r, Geometry *g) : t(t), ray_(r), geometry_(g) {}
   bool operator<(const HitRecord &) const;
 
