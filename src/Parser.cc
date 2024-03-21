@@ -39,8 +39,8 @@ Scene *Parser::getScene(const nlohmann::json &j) {
   sc->setAntialiasing(j.value("antialiasing", false));
   sc->setTwoSideRender(j.value("twosiderender", false));
   sc->setGlobalIllum(j.value("globalillum", false));
-  sc->setMaxBounce(j.value("maxbounce", 3));
-  sc->setProbTerminate(j.value("probTerminate", 0.33f));
+  sc->setMaxBounce(j.value("maxbounces", 3));
+  sc->setProbTerminate(j.value("probterminate", 0.33f));
   if (j.contains("raysperpixel"))
     sc->setRaysPerPixel(getRpp(j["raysperpixel"]));
 
