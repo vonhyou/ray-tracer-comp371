@@ -8,6 +8,7 @@
 #include "Ray.h"
 
 #include <Eigen/Core>
+#include <Eigen/src/Core/Matrix.h>
 #include <algorithm>
 #include <cmath>
 #include <iostream>
@@ -27,6 +28,7 @@ Vector3f clamp(const Vector3f &);
 namespace camera {
 int width, height, gridWidth, gridHeight, raysPerPixel;
 Vector3f pos, u, v, du, dv, vpUpperLeft, pxUpperLeft, gdu, gdv;
+bool globalIllum, antiAliasing;
 
 void init();
 } // namespace camera
@@ -85,41 +87,37 @@ void RayTracer::render() {
   using namespace camera;
   Output::current = new Output(Scene::current->name(), width, height);
 
+  std::cout << "Global Illumination: " << (globalIllum ? "T" : "F") << std::endl
+            << "Anti-aliasing: " << (antiAliasing ? "T" : "F") << std::endl;
+
+  std::cout << gridHeight << " " << gridWidth << " " << raysPerPixel
+            << std::endl;
   for (int y = 0; y < height; ++y) {
     utils::Progress::of((y + 1.0f) / height);
 
     for (int x = 0; x < width; ++x) {
       Vector3f color = Scene::current->backgroundColor();
 
-      bool globalIllum = Scene::current->globalIllum();
-      if (globalIllum || Scene::current->antiAliasing()) {
-        int success = 0;
-        Vector3f accumulate = Vector3f::Zero();
-        for (int j = 0; j < gridHeight; ++j)
-          for (int i = 0; i < gridWidth; ++i) {
-            Ray ray = getRay(x, y, i, j);
-            for (int rayNum = 0; rayNum < raysPerPixel; ++rayNum) {
-              Optional<Vector3f> result =
-                  globalIllum ? trace(ray) : trace(ray, x, y);
-              if (result.hasValue()) {
-                accumulate += result.value();
-                success++;
-              }
+      int success = 0;
+      Vector3f accumulate = Vector3f::Zero();
+      for (int j = 0; j < gridHeight; ++j)
+        for (int i = 0; i < gridWidth; ++i) {
+          Ray ray = getRay(x, y, i, j);
+          for (int rayNum = 0; rayNum < raysPerPixel; ++rayNum) {
+            Optional<Vector3f> result =
+                globalIllum ? trace(ray) : trace(ray, x, y);
+            if (result.hasValue()) {
+              accumulate += result.value();
+              success++;
             }
           }
-
-        if (success) {
-          if (globalIllum)
-            color = gammaCorrection(accumulate / success, 1.0f / 2.1f);
-          else
-            color = accumulate / success;
         }
-      } else {
-        Ray ray = getRay(x, y);
 
-        Optional<Vector3f> result = trace(ray, x, y);
-        if (result.hasValue())
-          color = result.value();
+      if (success) {
+        if (globalIllum)
+          color = gammaCorrection(accumulate / success, 1.0f / 2.1f);
+        else
+          color = accumulate / success;
       }
 
       writeColor(y * width + x, clamp(color));
@@ -320,7 +318,12 @@ void init() {
   vpUpperLeft = pos + lookAt - u / 2.0 - v / 2.0;
   pxUpperLeft = vpUpperLeft + (du + dv) / 2.0;
 
-  VectorXi data = Scene::current->raysPerPixel();
+  globalIllum = Scene::current->globalIllum();
+  antiAliasing = Scene::current->antiAliasing();
+
+  VectorXi data = !(globalIllum || antiAliasing)
+                      ? VectorXi(1)
+                      : Scene::current->raysPerPixel();
   gridWidth = getGridWidth(data);
   gridHeight = getGridHeight(data);
   raysPerPixel = getRayNumber(data);
