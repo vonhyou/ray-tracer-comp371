@@ -173,7 +173,6 @@ Light *RayTracer::singleLightSource() const {
   return nullptr;
 }
 
-// helper functions
 Ray getRay(int x, int y) {
   using namespace camera;
   return Ray(pos, pxUpperLeft + x * du + y * dv - pos);
@@ -194,12 +193,14 @@ void writeColor(int i, const Vector3f &color) {
   Output::current->b(i, color.z());
 }
 
+// This should generate a higher quality random number
 float getRandomNumber() {
   static std::uniform_real_distribution<float> distribution(0.0, 1.0);
   static std::mt19937 generator;
   return distribution(generator);
 }
 
+// Generate a randon point on a unit hemisphere
 Vector3f getRandomDirection() {
 RETRY_RANDOM:
   float x = getRandomNumber() * 2 - 1;
@@ -225,13 +226,13 @@ Vector3f getGlobalRandDirection(Vector3f normal) {
   return local2World * getRandomDirection();
 }
 
+// Check if a light source in on a surface (or really near)
 bool lightOnSurface(HitRecord hit, const Light *l) {
   Vector3f center = l->getCenter();
   Geometry *g = hit.geometry();
   Geometry::Type type = g->type();
-  if (type == Geometry::Type::RECTANGLE) {
+  if (type == Geometry::Type::RECTANGLE)
     return (g->sample() - center).dot(g->normal(center)) < 1e-5;
-  }
 
   return false;
 }
@@ -293,6 +294,11 @@ int getRayNumber(VectorXi data) {
   return data.size() == 2 ? data.y() : (data.size() == 3 ? data.z() : 1);
 }
 
+/**
+ * Initialize camera parameters
+ *
+ * Construct the surface for viewing the world
+ */
 void init() {
   width = Scene::current->width();
   height = Scene::current->height();

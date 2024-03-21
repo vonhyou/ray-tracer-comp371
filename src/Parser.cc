@@ -18,9 +18,8 @@ const Vector3f getVector3f(const nlohmann::json &j) {
 const VectorXi getRpp(const nlohmann::json &j) {
   VectorXi rpp(j.size());
 
-  for (int i = 0; i < j.size(); ++i) {
+  for (int i = 0; i < j.size(); ++i)
     rpp[i] = j[i].get<int>();
-  }
 
   return rpp;
 }

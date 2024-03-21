@@ -10,6 +10,8 @@
 
 #include <vector>
 
+using std::vector;
+
 class RayTracer {
 public:
   RayTracer(const nlohmann::json &j) : json(j) {}
@@ -17,10 +19,10 @@ public:
 
 private:
   nlohmann::json json;
-  std::vector<Scene *> scenes;
-  std::vector<Light *> lights;
-  std::vector<Geometry *> geometries;
-  std::vector<Output *> outputs;
+  vector<Scene *> scenes;
+  vector<Light *> lights;
+  vector<Geometry *> geometries;
+  vector<Output *> outputs;
 
   void parse();
   void render();
