@@ -24,7 +24,6 @@ private:
 
   void parse();
   void render();
-  Optional<HitRecord> getHitRecord(Ray, const Geometry *, bool) const;
   Optional<HitRecord> getHitRecord(Ray, const Geometry *) const;
   Optional<HitRecord> getHitRecord(Ray) const;
   Vector3f calculateColor(const HitRecord &, int) const;

@@ -22,6 +22,10 @@ bool Light::isUse() const { return use; }
 
 Vector3f PointLight::getCenter() const { return center; }
 
+bool lightOnSurface(Vector3f center, Geometry *g) {
+  return (g->sample() - center).dot(g->normal(center)) < 1e-5;
+}
+
 Vector3f PointLight::illumination(const HitRecord &hit,
                                   const vector<Geometry *> &geometries) const {
   Vector3f shadingPoint = hit.point();
@@ -30,9 +34,9 @@ Vector3f PointLight::illumination(const HitRecord &hit,
   Ray shadowRay(shadingPoint, rayDirection);
 
   for (auto g : geometries)
-    if (g != geometry && g->intersect(shadowRay).hasValue() &&
-        g->type() == Geometry::Type::SPHERE)
-      return Vector3f::Zero();
+    if (g != geometry && g->intersect(shadowRay).hasValue())
+      if (g->type() == Geometry::Type::SPHERE || !lightOnSurface(center, g))
+        return Vector3f::Zero();
 
   Vector3f ambient_ =
       geometry->ka() * geometry->ca().array() * Scene::current->ai().array();

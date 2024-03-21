@@ -67,6 +67,11 @@ void RayTracer::parse() {
     lights.push_back(Parser::getLight(*i));
 }
 
+Vector3f gammaCorrection(Vector3f color, float gammaInv) {
+  return Vector3f(std::pow(color.x(), gammaInv), std::pow(color.y(), gammaInv),
+                  std::pow(color.z(), gammaInv));
+}
+
 /**
  * Render the current scene
  *
@@ -109,7 +114,7 @@ void RayTracer::render() {
           }
 
         if (success)
-          color = accumulate / success;
+          color = gammaCorrection(accumulate / success, 1.0f / 2.1f);
       } else {
         Ray ray = getRay(x, y);
         Optional<HitRecord> hitRecord = getHitRecord(ray);
@@ -141,15 +146,12 @@ Vector3f RayTracer::calculateColor(const HitRecord &hit, int i) const {
 /**
  * Find the nearest geometry to intersect
  */
-Optional<HitRecord> RayTracer::getHitRecord(Ray r, const Geometry *self,
-                                            bool notRectangle) const {
+Optional<HitRecord> RayTracer::getHitRecord(Ray r, const Geometry *self) const {
   priority_queue<HitRecord> records;
   for (auto g : geometries) {
     Optional<float> t = g->intersect(r);
     if (t.hasValue() && g != self)
-      if (!notRectangle ||
-          notRectangle && g->type() != Geometry::Type::RECTANGLE)
-        records.push(HitRecord(t.value(), r, g));
+      records.push(HitRecord(t.value(), r, g));
   }
 
   if (!records.empty()) {
@@ -161,12 +163,8 @@ Optional<HitRecord> RayTracer::getHitRecord(Ray r, const Geometry *self,
   return Optional<HitRecord>::nullopt;
 }
 
-Optional<HitRecord> RayTracer::getHitRecord(Ray r, const Geometry *g) const {
-  return getHitRecord(r, g, false);
-}
-
 Optional<HitRecord> RayTracer::getHitRecord(Ray r) const {
-  return getHitRecord(r, nullptr, false);
+  return getHitRecord(r, nullptr);
 }
 
 Light *RayTracer::singleLightSource() const {
@@ -199,8 +197,8 @@ void writeColor(int i, const Vector3f &color) {
 
 Vector3f getRandomDirection() {
 RETRY_RANDOM:
-  float x = (float)rand() / RAND_MAX;
-  float y = (float)rand() / RAND_MAX;
+  float x = ((float)rand() / RAND_MAX) * 2 - 1;
+  float y = ((float)rand() / RAND_MAX) * 2 - 1;
   if (x * x + y * y > 1)
     goto RETRY_RANDOM;
 
@@ -222,6 +220,17 @@ Vector3f getGlobalRandDirection(Vector3f normal) {
   return local2World * getRandomDirection();
 }
 
+bool lightOnSurface(HitRecord hit, const Light *l) {
+  Vector3f center = l->getCenter();
+  Geometry *g = hit.geometry();
+  Geometry::Type type = g->type();
+  if (type == Geometry::Type::RECTANGLE) {
+    return (g->sample() - center).dot(g->normal(center)) < 1e-5;
+  }
+
+  return false;
+}
+
 Vector3f RayTracer::trace(HitRecord hit, int bounce, float prob) const {
 RETRY_TRACING:
   bool finish = !bounce || ((float)rand() / RAND_MAX < prob);
@@ -238,14 +247,16 @@ RETRY_TRACING:
   direction.normalize();
   Ray ray(point + hit.normal() * 1e-6, direction);
 
-  Optional<HitRecord> hitRecord = getHitRecord(ray, geometry, finish);
+  Optional<HitRecord> hitRecord = getHitRecord(ray, geometry);
   Vector3f traceColor = Vector3f::Zero();
   if (!finish && hitRecord.hasValue())
     traceColor = trace(hitRecord.value(), bounce - 1, prob);
   else if (!finish && !hitRecord.hasValue())
     goto RETRY_TRACING;
-  else if (finish && !hitRecord.hasValue())
-    traceColor = light->id();
+  else if (finish)
+    if (!hitRecord.hasValue() ||
+        (hitRecord.hasValue() && lightOnSurface(hitRecord.value(), light)))
+      traceColor = light->id();
 
   return traceColor.array() * geometry->cd().array() *
          std::max(0.0f, hit.normal().dot(direction));
