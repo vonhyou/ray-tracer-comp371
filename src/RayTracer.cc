@@ -8,6 +8,7 @@
 #include "Ray.h"
 
 #include <Eigen/Core>
+#include <Eigen/src/Core/Matrix.h>
 #include <algorithm>
 #include <cmath>
 #include <cstdlib>
@@ -102,6 +103,9 @@ void RayTracer::render() {
                 success++;
               }
             }
+
+            //  std::cout << accumulate.transpose() << " (" << success <<
+            //  std::endl;
           }
 
         if (success)
@@ -203,7 +207,23 @@ RETRY_RANDOM:
   return Vector3f(x, y, std::sqrt(1 - x * x - y * y));
 }
 
+Vector3f getGlobalRandDirection(Vector3f normal) {
+  Vector3f tangent = normal.cross(Vector3f::UnitX());
+  if (tangent.norm() < 1e-6f)
+    tangent = normal.cross(Vector3f::UnitY());
+
+  tangent.normalize();
+  Vector3f binormal = normal.cross(tangent);
+  Eigen::Matrix3f local2World;
+  local2World.col(0) = tangent;
+  local2World.col(1) = binormal.normalized();
+  local2World.col(2) = normal.normalized();
+
+  return local2World * getRandomDirection();
+}
+
 Vector3f RayTracer::trace(HitRecord hit, int bounce, float prob) const {
+RETRY_TRACING:
   bool finish = !bounce || ((float)rand() / RAND_MAX < prob);
   Vector3f point = hit.point();
   Light *light = singleLightSource();
@@ -213,15 +233,17 @@ Vector3f RayTracer::trace(HitRecord hit, int bounce, float prob) const {
   if (finish)
     direction = light->getCenter() - point;
   else
-    direction = point + getRandomDirection();
+    direction = getGlobalRandDirection(hit.normal());
 
   direction.normalize();
-  Ray ray(point, direction);
+  Ray ray(point + hit.normal() * 1e-6, direction);
 
   Optional<HitRecord> hitRecord = getHitRecord(ray, geometry, finish);
   Vector3f traceColor = Vector3f::Zero();
   if (!finish && hitRecord.hasValue())
     traceColor = trace(hitRecord.value(), bounce - 1, prob);
+  else if (!finish && !hitRecord.hasValue())
+    goto RETRY_TRACING;
   else if (finish && !hitRecord.hasValue())
     traceColor = light->id();
 
