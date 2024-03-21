@@ -8,12 +8,11 @@
 #include "Ray.h"
 
 #include <Eigen/Core>
-#include <Eigen/src/Core/Matrix.h>
 #include <algorithm>
 #include <cmath>
-#include <cstdlib>
 #include <iostream>
 #include <queue>
+#include <random>
 
 using Eigen::VectorXi;
 using std::priority_queue;
@@ -195,10 +194,16 @@ void writeColor(int i, const Vector3f &color) {
   Output::current->b(i, color.z());
 }
 
+float getRandomNumber() {
+  static std::uniform_real_distribution<float> distribution(0.0, 1.0);
+  static std::mt19937 generator;
+  return distribution(generator);
+}
+
 Vector3f getRandomDirection() {
 RETRY_RANDOM:
-  float x = ((float)rand() / RAND_MAX) * 2 - 1;
-  float y = ((float)rand() / RAND_MAX) * 2 - 1;
+  float x = getRandomNumber() * 2 - 1;
+  float y = getRandomNumber() * 2 - 1;
   if (x * x + y * y > 1)
     goto RETRY_RANDOM;
 
@@ -233,7 +238,7 @@ bool lightOnSurface(HitRecord hit, const Light *l) {
 
 Vector3f RayTracer::trace(HitRecord hit, int bounce, float prob) const {
 RETRY_TRACING:
-  bool finish = !bounce || ((float)rand() / RAND_MAX < prob);
+  bool finish = !bounce || (getRandomNumber() < prob);
   Vector3f point = hit.point();
   Light *light = singleLightSource();
   Vector3f direction;
