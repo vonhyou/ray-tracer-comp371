@@ -41,6 +41,7 @@ public:
   int height();
   float fov();
   bool globalIllum();
+  bool antiAliasing();
   int maxBounce();
   float probTerminate();
   Vector3f ai() const;

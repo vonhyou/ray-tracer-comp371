@@ -91,39 +91,37 @@ void RayTracer::render() {
     for (int x = 0; x < width; ++x) {
       Vector3f color = Scene::current->backgroundColor();
 
-      if (Scene::current->globalIllum()) {
+      bool globalIllum = Scene::current->globalIllum();
+      if (globalIllum || Scene::current->antiAliasing()) {
         int success = 0;
         Vector3f accumulate = Vector3f::Zero();
         for (int j = 0; j < gridHeight; ++j)
           for (int i = 0; i < gridWidth; ++i) {
-
-            if (x != width / 2 || y != height / 2 || i || j)
-              ; // goto DEBUG_COLOR;
             Ray ray = getRay(x, y, i, j);
             for (int rayNum = 0; rayNum < raysPerPixel; ++rayNum) {
-              utils::Optional<Vector3f> result = trace(ray);
+              Optional<Vector3f> result =
+                  globalIllum ? trace(ray) : trace(ray, x, y);
               if (result.hasValue()) {
                 accumulate += result.value();
                 success++;
               }
             }
-
-            //  std::cout << accumulate.transpose() << " (" << success <<
-            //  std::endl;
           }
 
-        if (success)
-          color = gammaCorrection(accumulate / success, 1.0f / 2.1f);
+        if (success) {
+          if (globalIllum)
+            color = gammaCorrection(accumulate / success, 1.0f / 2.1f);
+          else
+            color = accumulate / success;
+        }
       } else {
         Ray ray = getRay(x, y);
-        Optional<HitRecord> hitRecord = getHitRecord(ray);
 
-        if (hitRecord.hasValue()) {
-          HitRecord hit = hitRecord.value();
-          color = calculateColor(hit, y * width + x);
-        }
+        Optional<Vector3f> result = trace(ray, x, y);
+        if (result.hasValue())
+          color = result.value();
       }
-    DEBUG_COLOR:
+
       writeColor(y * width + x, clamp(color));
     }
   }
@@ -133,7 +131,7 @@ void RayTracer::render() {
 /**
  * Calculate color using phong model
  */
-Vector3f RayTracer::calculateColor(const HitRecord &hit, int i) const {
+Vector3f RayTracer::calculateColor(const HitRecord &hit) const {
   Vector3f result(0, 0, 0);
   for (auto light : lights)
     result += light->isUse() ? light->illumination(hit, geometries)
@@ -268,17 +266,25 @@ RETRY_TRACING:
          std::max(0.0f, hit.normal().dot(direction));
 }
 
-utils::Optional<Vector3f> RayTracer::trace(Ray r) const {
+Optional<Vector3f> RayTracer::trace(Ray r, int x, int y) const {
+  Optional<HitRecord> hitRecord = getHitRecord(r);
+  if (hitRecord.hasValue())
+    return Optional<Vector3f>(calculateColor(hitRecord.value()));
+
+  return Optional<Vector3f>::nullopt;
+}
+
+Optional<Vector3f> RayTracer::trace(Ray r) const {
   Optional<HitRecord> hitRecord = getHitRecord(r);
   if (hitRecord.hasValue()) {
     Vector3f color = trace(hitRecord.value(), Scene::current->maxBounce(),
                            Scene::current->probTerminate());
 
     if (color != Vector3f::Zero())
-      return utils::Optional<Vector3f>(color);
+      return Optional<Vector3f>(color);
   }
 
-  return utils::Optional<Vector3f>::nullopt;
+  return Optional<Vector3f>::nullopt;
 }
 
 namespace camera {

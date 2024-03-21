@@ -12,6 +12,8 @@ float Scene::fov() { return fov_; }
 
 bool Scene::globalIllum() { return globalIllum_; }
 
+bool Scene::antiAliasing() { return antialiasing_; }
+
 int Scene::maxBounce() { return maxBounce_; }
 
 float Scene::probTerminate() { return probTerminate_; }
