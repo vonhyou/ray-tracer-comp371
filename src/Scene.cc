@@ -10,6 +10,14 @@ int Scene::height() { return height_; }
 
 float Scene::fov() { return fov_; }
 
+bool Scene::globalIllum() { return globalIllum_; }
+
+int Scene::maxBounce() { return maxBounce_; }
+
+float Scene::probTerminate() { return probTerminate_; }
+
+Eigen::VectorXi Scene::raysPerPixel() const { return raysPerPixel_; }
+
 Vector3f Scene::ai() const { return ai_; }
 
 Vector3f Scene::center() const { return center_; }
@@ -34,4 +42,10 @@ void Scene::setTwoSideRender(bool twoSideRender) {
 
 void Scene::setGlobalIllum(bool globalIllum) {
   this->globalIllum_ = globalIllum;
+}
+
+void Scene::setMaxBounce(int maxBounce) { this->maxBounce_ = maxBounce; }
+
+void Scene::setProbTerminate(float probTerminate) {
+  this->probTerminate_ = probTerminate;
 }

@@ -1,4 +1,5 @@
 #ifndef OPTIONAL_H_
+#define OPTIONAL_H_
 
 namespace utils {
 

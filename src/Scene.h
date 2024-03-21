@@ -30,22 +30,31 @@ private:
   bool antialiasing_ = false;
   bool twoSideRender_ = false;
   bool globalIllum_ = false;
+  int maxBounce_ = 3;
+  float probTerminate_ = 0.33;
 
 public:
+  static Scene *current;
+
   string name() const;
   int width();
   int height();
   float fov();
+  bool globalIllum();
+  int maxBounce();
+  float probTerminate();
   Vector3f ai() const;
   Vector3f center() const;
   Vector3f up() const;
   Vector3f lookAt() const;
   Vector3f backgroundColor() const;
+  Eigen::VectorXi raysPerPixel() const;
   void setRaysPerPixel(const Eigen::VectorXi &);
   void setAntialiasing(bool);
   void setTwoSideRender(bool);
   void setGlobalIllum(bool);
-  static Scene *current;
+  void setMaxBounce(int);
+  void setProbTerminate(float);
 };
 
 #endif // !SCENE_H_

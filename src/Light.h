@@ -18,6 +18,7 @@ public:
   virtual ~Light() = default;
   virtual Vector3f illumination(const HitRecord &,
                                 const vector<Geometry *> &) const = 0;
+  virtual Vector3f getCenter() const = 0;
 
 protected:
   Light(Type type, const Vector3f &id, const Vector3f &is)
@@ -36,6 +37,7 @@ public:
   void setGridSize(unsigned int);
   void setUseCenter(bool);
   void setIsUse(bool);
+  Type type() const;
   Vector3f id() const;
   Vector3f is() const;
   bool isUse() const;
@@ -52,6 +54,9 @@ public:
 
 private:
   Vector3f p1, p2, p3, p4;
+
+public:
+  Vector3f getCenter() const override;
 };
 
 class PointLight : public Light {
@@ -67,6 +72,9 @@ public:
 
 private:
   Vector3f center;
+
+public:
+  Vector3f getCenter() const override;
 };
 
 #endif // !LIGHT_H_

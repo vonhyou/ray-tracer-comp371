@@ -18,9 +18,8 @@ const Vector3f getVector3f(const nlohmann::json &j) {
 const VectorXi getRpp(const nlohmann::json &j) {
   VectorXi rpp(j.size());
 
-  for (int i = 0; i < j.size(); ++i) {
+  for (int i = 0; i < j.size(); ++i)
     rpp[i] = j[i].get<int>();
-  }
 
   return rpp;
 }
@@ -40,6 +39,8 @@ Scene *Parser::getScene(const nlohmann::json &j) {
   sc->setAntialiasing(j.value("antialiasing", false));
   sc->setTwoSideRender(j.value("twosiderender", false));
   sc->setGlobalIllum(j.value("globalillum", false));
+  sc->setMaxBounce(j.value("maxbounce", 3));
+  sc->setProbTerminate(j.value("probTerminate", 0.33f));
   if (j.contains("raysperpixel"))
     sc->setRaysPerPixel(getRpp(j["raysperpixel"]));
 

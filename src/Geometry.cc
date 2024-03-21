@@ -40,6 +40,8 @@ Vector3f Sphere::normal(const Vector3f &p) const {
   return (p - center).normalized();
 }
 
+Vector3f Sphere::sample() const { return center + Vector3f(radius, 0, 0); }
+
 bool isInRectangle(const Vector3f &p, const Vector3f &a, const Vector3f &b,
                    const Vector3f &c, const Vector3f &d, const Vector3f &n) {
   float s1 = (b - a).cross(p - a).dot(n);
@@ -53,7 +55,7 @@ bool isInRectangle(const Vector3f &p, const Vector3f &a, const Vector3f &b,
 
 Optional<float> Rectangle::intersect(const Ray &r) const {
   float denom = normal_.dot(r.direction());
-  if (abs(denom) < 1e-6f)
+  if (std::fabs(denom) < 1e-6f)
     return Optional<float>::nullopt;
 
   float t = -normal_.dot(r.origin() - p1) / denom;
@@ -67,3 +69,5 @@ Optional<float> Rectangle::intersect(const Ray &r) const {
 }
 
 Vector3f Rectangle::normal(const Vector3f &p) const { return normal_; }
+
+Vector3f Rectangle::sample() const { return p1; }

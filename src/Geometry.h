@@ -20,6 +20,7 @@ public:
   virtual ~Geometry() = default;
   virtual Optional<float> intersect(const Ray &) const = 0;
   virtual Vector3f normal(const Vector3f &) const = 0;
+  virtual Vector3f sample() const = 0;
 
 protected:
   Geometry(Type type, float ka, float kd, float ks, const Vector3f &ca,
@@ -54,6 +55,7 @@ public:
 
   Optional<float> intersect(const Ray &) const override;
   Vector3f normal(const Vector3f &) const override;
+  Vector3f sample() const override;
 
 private:
   float radius;
@@ -70,6 +72,7 @@ public:
 
   Optional<float> intersect(const Ray &) const override;
   Vector3f normal(const Vector3f &) const override;
+  Vector3f sample() const override;
 
 private:
   Vector3f p1, p2, p3, p4;

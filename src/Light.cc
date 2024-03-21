@@ -20,6 +20,12 @@ Vector3f Light::is() const { return is_; }
 
 bool Light::isUse() const { return use; }
 
+Vector3f PointLight::getCenter() const { return center; }
+
+bool lightOnSurface(Vector3f center, Geometry *g) {
+  return (g->sample() - center).dot(g->normal(center)) < 1e-5;
+}
+
 Vector3f PointLight::illumination(const HitRecord &hit,
                                   const vector<Geometry *> &geometries) const {
   Vector3f shadingPoint = hit.point();
@@ -28,9 +34,9 @@ Vector3f PointLight::illumination(const HitRecord &hit,
   Ray shadowRay(shadingPoint, rayDirection);
 
   for (auto g : geometries)
-    if (g != geometry && g->intersect(shadowRay).hasValue() &&
-        g->type() == Geometry::Type::SPHERE)
-      return Vector3f::Zero();
+    if (g != geometry && g->intersect(shadowRay).hasValue())
+      if (g->type() == Geometry::Type::SPHERE || !lightOnSurface(center, g))
+        return Vector3f::Zero();
 
   Vector3f ambient_ =
       geometry->ka() * geometry->ca().array() * Scene::current->ai().array();
@@ -46,16 +52,19 @@ Vector3f PointLight::illumination(const HitRecord &hit,
   return specular_ + ambient_ + diffuse_;
 }
 
+Vector3f AreaLight::getCenter() const {
+  return p1 + (p4 - p1) / 2 + (p2 - p1) / 2;
+}
+
 Vector3f AreaLight::illumination(const HitRecord &hit,
                                  const vector<Geometry *> &geometries) const {
   Vector3f u = p4 - p1;
   Vector3f v = p2 - p1;
 
-  Vector3f color = Vector3f::Zero();
-
   if (useCenter) {
-    color += PointLight(*this, p1 + (u + v) / 2).illumination(hit, geometries);
+    return PointLight(*this, getCenter()).illumination(hit, geometries);
   } else {
+    Vector3f color = Vector3f::Zero();
     for (int y = 0; y < gridSize; ++y)
       for (int x = 0; x < gridSize; ++x) {
         Vector3f contribution =
@@ -63,7 +72,6 @@ Vector3f AreaLight::illumination(const HitRecord &hit,
                 .illumination(hit, geometries);
         color += contribution;
       }
+    return color / gridSize / gridSize;
   }
-
-  return color / gridSize / gridSize;
 }
