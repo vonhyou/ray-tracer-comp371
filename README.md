@@ -1,5 +1,3 @@
-
-
 This code is based on course project from Concordia University [COMP371](https://users.encs.concordia.ca/~graphics/teaching/computer-graphics/).
 
 The following files are provided by the course instructor:
