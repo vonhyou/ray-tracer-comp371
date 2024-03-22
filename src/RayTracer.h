@@ -28,7 +28,7 @@ private:
   void render();
   Optional<HitRecord> getHitRecord(Ray, const Geometry *) const;
   Optional<HitRecord> getHitRecord(Ray) const;
-  Vector3f calculateColor(const HitRecord &, int) const;
+  Vector3f calculateColor(const HitRecord &) const;
   Light *singleLightSource() const;
   Optional<Vector3f> trace(Ray) const;
   Vector3f trace(HitRecord, int, float) const;
