@@ -8,7 +8,6 @@
 #include "Ray.h"
 
 #include <Eigen/Core>
-#include <Eigen/src/Core/Matrix.h>
 #include <algorithm>
 #include <cmath>
 #include <iostream>
