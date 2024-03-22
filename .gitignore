@@ -1,5 +1,5 @@
 build/
-*.ppm
 *.zip
 .vscode/
 .cache/
+*.ppm

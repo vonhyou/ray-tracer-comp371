@@ -1,5 +1,32 @@
+This code is based on course project from Concordia University [COMP371](https://users.encs.concordia.ca/~graphics/teaching/computer-graphics/).
 
+The following files are provided by the course instructor:
 
+1. Showcased in `assets` folder (except for `cornell_box_demo`)
+2. Libraries and tests in `external` folder
+3. The `main.cpp` and `CMakeLists.txt`
+
+Those files (except for CMakeLists.txt`) remain unchanged for evaluation purposes.
+
+Please modify the cmake file for you to build on your machine.
+
+## Showcase
+
+Direct Illumination
+
+![Direct Illumination](./student_solution/test_scene3B.jpg)
+
+Anti-aliasing
+
+![Anti-aliasing](./student_solution/test_scene3B_aa.jpg)
+
+Global Illumination (Path-tracing)
+
+![Global Illumination (Path-tracing)](./student_solution/cornell_box_demo.jpg)
+
+**The original readme content is attached below:**
+
+```txt
 This code is used for three purposes:
 
 1) Build the official course solution
@@ -35,3 +62,4 @@ Building the solution:
 
 
 Note that some test scenes are provided in the assets folder. You can do a soft link to the assets folder in the build folder for your convenience.
+```
