@@ -12,8 +12,15 @@ Those files (except for CMakeLists.txt`) remain unchanged for evaluation purpose
 
 Please modify the cmake file for you to build on your machine.
 
+## Showcase
 
-The original readme content is attached below:
+![Direct Illumination](./student_solution/test_scene3B.ppm)
+
+![Anti-aliasing](./student_solution/Anti-aliasing)
+
+![Global Illumination (Path-tracing)](./student_solution/cornell_box_demo.ppm)
+
+**The original readme content is attached below:**
 
 ```txt
 This code is used for three purposes:
