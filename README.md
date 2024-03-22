@@ -12,9 +12,15 @@ Please modify the cmake file for you to build on your machine.
 
 ## Showcase
 
+Direct Illumination
+
 ![Direct Illumination](./student_solution/test_scene3B.jpg)
 
+Anti-aliasing
+
 ![Anti-aliasing](./student_solution/test_scene3B_aa.jpg)
+
+Global Illumination (Path-tracing)
 
 ![Global Illumination (Path-tracing)](./student_solution/cornell_box_demo.jpg)
 
